@@ -260,12 +260,6 @@ function ScheduleGrid({ days, activeIdx, filteredEvents }) {
   const currentDay = days[activeIdx];
   const timeSlots = useMemo(() => collectTimeSlots(filteredEvents), [filteredEvents]);
 
-  if (filteredEvents.length === 0) {
-    return (
-      <EmptyState />
-    );
-  }
-
   // Group events by time slot key for the grid
   const eventsBySlot = useMemo(() => {
     const map = {};
@@ -276,6 +270,12 @@ function ScheduleGrid({ days, activeIdx, filteredEvents }) {
     }
     return map;
   }, [filteredEvents]);
+
+  if (filteredEvents.length === 0) {
+    return (
+      <EmptyState />
+    );
+  }
 
   return (
     <div className="overflow-x-auto -mx-4 sm:mx-0 pb-4">
