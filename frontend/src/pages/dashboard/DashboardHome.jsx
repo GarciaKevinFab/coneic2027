@@ -46,7 +46,8 @@ export default function DashboardHome() {
     retry: 1,
   });
 
-  const upcomingWorkshops = (workshops || []).slice(0, 3);
+  const workshopList = Array.isArray(workshops) ? workshops : (workshops?.results || []);
+  const upcomingWorkshops = workshopList.slice(0, 3);
 
   return (
     <div className="space-y-6 sm:space-y-8">

@@ -17,8 +17,19 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (data) => {
+      // Call Zustand store login to update in-memory state
       storeLogin(data.user, data.access, data.refresh);
-      navigate(from, { replace: true });
+      // Wait for Zustand persist middleware to flush to localStorage,
+      // then do a full page navigation to ensure ProtectedRoute rehydrates correctly
+      const checkAndRedirect = () => {
+        const stored = JSON.parse(localStorage.getItem('coneic-auth') || '{}');
+        if (stored.state?.isAuthenticated) {
+          window.location.replace(from);
+        } else {
+          setTimeout(checkAndRedirect, 20);
+        }
+      };
+      setTimeout(checkAndRedirect, 10);
     },
     onError: (err) => {
       const msg = err.response?.data?.detail || 'Credenciales invalidas. Intenta de nuevo.';
