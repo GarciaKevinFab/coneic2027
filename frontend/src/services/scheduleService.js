@@ -3,7 +3,7 @@ import api from './api';
 const scheduleService = {
   getSchedule: async () => {
     const { data } = await api.get('/schedule/');
-    return data;
+    return data.results || data;
   },
 
   getByDay: async (date) => {

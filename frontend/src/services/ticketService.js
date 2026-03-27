@@ -3,7 +3,7 @@ import api from './api';
 const ticketService = {
   getTypes: async () => {
     const { data } = await api.get('/tickets/types/');
-    return data;
+    return data.results || data;
   },
 
   purchase: async (purchaseData) => {

@@ -23,12 +23,12 @@ const workshopService = {
 
   getMyWorkshops: async () => {
     const { data } = await api.get('/workshops/my/');
-    return data;
+    return data.results || data;
   },
 
   getSpeakers: async () => {
     const { data } = await api.get('/workshops/speakers/');
-    return data;
+    return data.results || data;
   },
 };
 

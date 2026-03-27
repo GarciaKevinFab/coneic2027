@@ -3,7 +3,7 @@ import api from './api';
 const certificateService = {
   getMyCertificates: async () => {
     const { data } = await api.get('/certificates/my/');
-    return data;
+    return data.results || data;
   },
 
   download: async (certificateId) => {
