@@ -1,23 +1,18 @@
 import api from './api';
 
 const paymentService = {
-  chargeCulqi: async (paymentData) => {
-    const { data } = await api.post('/payments/culqi', paymentData);
+  chargeCulqi: async (chargeData) => {
+    const { data } = await api.post('/payments/charge/', chargeData);
     return data;
   },
 
-  chargeYape: async (paymentData) => {
-    const { data } = await api.post('/payments/yape', paymentData);
+  chargeYape: async (yapeData) => {
+    const { data } = await api.post('/payments/yape/', yapeData);
     return data;
   },
 
-  getStatus: async (paymentId) => {
-    const { data } = await api.get(`/payments/${paymentId}/status`);
-    return data;
-  },
-
-  getPaymentMethods: async () => {
-    const { data } = await api.get('/payments/methods');
+  getStatus: async (purchaseCode) => {
+    const { data } = await api.get(`/payments/status/${purchaseCode}/`);
     return data;
   },
 };

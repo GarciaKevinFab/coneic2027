@@ -1,20 +1,25 @@
 import api from './api';
 
 const certificateService = {
-  getMyCerts: async () => {
-    const { data } = await api.get('/certificates/my-certificates');
+  getMyCertificates: async () => {
+    const { data } = await api.get('/certificates/my/');
     return data;
   },
 
-  download: async (certId) => {
-    const response = await api.get(`/certificates/${certId}/download`, {
+  download: async (certificateId) => {
+    const response = await api.get(`/certificates/${certificateId}/download/`, {
       responseType: 'blob',
     });
-    return response;
+    return response.data;
   },
 
   validate: async (code) => {
-    const { data } = await api.get(`/certificates/validate/${code}`);
+    const { data } = await api.get(`/certificates/validate/${code}/`);
+    return data;
+  },
+
+  generate: async () => {
+    const { data } = await api.post('/certificates/generate/');
     return data;
   },
 };

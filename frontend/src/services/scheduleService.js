@@ -2,22 +2,17 @@ import api from './api';
 
 const scheduleService = {
   getSchedule: async () => {
-    const { data } = await api.get('/schedule');
+    const { data } = await api.get('/schedule/');
     return data;
   },
 
-  getByDay: async (day) => {
-    const { data } = await api.get(`/schedule/day/${day}`);
+  getByDay: async (date) => {
+    const { data } = await api.get(`/schedule/${date}/`);
     return data;
   },
 
   getByType: async (type) => {
-    const { data } = await api.get(`/schedule/type/${type}`);
-    return data;
-  },
-
-  getSpeakers: async () => {
-    const { data } = await api.get('/schedule/speakers');
+    const { data } = await api.get('/schedule/by-type/', { params: { type } });
     return data;
   },
 };

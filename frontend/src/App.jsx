@@ -78,16 +78,26 @@ export default function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/sobre-el-evento" element={<AboutPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
+        <Route path="/cronograma" element={<SchedulePage />} />
         <Route path="/speakers" element={<SpeakersPage />} />
+        <Route path="/ponentes" element={<SpeakersPage />} />
         <Route path="/workshops" element={<WorkshopsPage />} />
+        <Route path="/talleres" element={<WorkshopsPage />} />
         <Route path="/tickets" element={<TicketsPage />} />
+        <Route path="/entradas" element={<TicketsPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/registro" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+        <Route path="/verificar-email/:token" element={<VerifyEmailPage />} />
         <Route path="/password-reset" element={<PasswordResetPage />} />
+        <Route path="/recuperar-contrasena" element={<PasswordResetPage />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/validate-certificate/:code" element={<CertificateValidatorPage />} />
         <Route path="/validate-certificate" element={<CertificateValidatorPage />} />
+        <Route path="/validar-certificado/:code" element={<CertificateValidatorPage />} />
       </Route>
 
       {/* Dashboard routes (protected) */}
@@ -98,6 +108,7 @@ export default function App() {
           <Route path="/dashboard/my-ticket" element={<MyTicketPage />} />
           <Route path="/dashboard/my-workshops" element={<MyWorkshopsPage />} />
           <Route path="/dashboard/purchase" element={<PurchasePage />} />
+          <Route path="/dashboard/comprar" element={<PurchasePage />} />
           <Route path="/dashboard/certificates" element={<CertificatesPage />} />
         </Route>
       </Route>
