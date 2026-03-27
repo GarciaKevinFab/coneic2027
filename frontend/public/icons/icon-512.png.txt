@@ -1,0 +1,4 @@
+PLACEHOLDER: Replace this file with a real 512x512 PNG icon for CONEIC 2027.
+The icon should be the event logo on a solid primary (#1A3A6B) background.
+File should be named icon-512.png (remove this .txt extension).
+Used for PWA manifest splash screen and installation icon.

@@ -1,79 +1,59 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { HiMail, HiLockClosed, HiCheckCircle } from 'react-icons/hi';
+import { Link } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { HiMail, HiCheckCircle } from 'react-icons/hi';
 import authService from '../services/authService';
-import toast from 'react-hot-toast';
 
 export default function PasswordResetPage() {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const [step, setStep] = useState(token ? 'confirm' : 'request');
   const [email, setEmail] = useState('');
-  const [passwords, setPasswords] = useState({ password: '', confirm: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleRequest = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await authService.requestPasswordReset(email);
-      setDone(true);
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Error al enviar el correo');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const mutation = useMutation({
+    mutationFn: (emailValue) => authService.requestPasswordReset(emailValue),
+    onSuccess: () => {
+      setSent(true);
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.detail;
+      setError(typeof msg === 'string' ? msg : 'Error al enviar el correo. Intenta de nuevo.');
+    },
+  });
 
-  const handleConfirm = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (passwords.password !== passwords.confirm) {
-      toast.error('Las contrasenas no coinciden');
+    setError('');
+    if (!email.trim()) {
+      setError('Ingresa tu correo electronico.');
       return;
     }
-    if (passwords.password.length < 8) {
-      toast.error('La contrasena debe tener al menos 8 caracteres');
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Ingresa un correo valido.');
       return;
     }
-    setIsLoading(true);
-    try {
-      await authService.confirmPasswordReset(token, passwords.password);
-      setDone(true);
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Error al restablecer la contrasena');
-    } finally {
-      setIsLoading(false);
-    }
+    mutation.mutate(email);
   };
 
-  if (done && step === 'request') {
+  if (sent) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md text-center animate-fade-in">
-          <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
-            <HiMail className="w-10 h-10 text-green-500" />
-          </div>
-          <h1 className="font-display font-bold text-2xl text-gray-900 mb-3">Revisa tu correo</h1>
-          <p className="text-gray-500 mb-8">
-            Si existe una cuenta con ese correo, recibiras un enlace para restablecer tu contrasena.
-          </p>
-          <Link to="/login" className="btn-primary">Volver al login</Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (done && step === 'confirm') {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md text-center animate-fade-in">
+        <div className="w-full max-w-md text-center">
           <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
             <HiCheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="font-display font-bold text-2xl text-gray-900 mb-3">Contrasena actualizada</h1>
-          <p className="text-gray-500 mb-8">Tu contrasena ha sido restablecida exitosamente.</p>
-          <Link to="/login" className="btn-primary">Iniciar sesion</Link>
+          <h1 className="font-display font-bold text-2xl text-gray-900 mb-3">
+            Revisa tu correo
+          </h1>
+          <p className="text-gray-500 mb-8">
+            Si existe una cuenta asociada a <strong className="text-gray-700">{email}</strong>,
+            recibiras un enlace para restablecer tu contrasena.
+          </p>
+          <Link
+            to="/login"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#1A3A6B] text-white font-semibold text-sm hover:bg-[#1A3A6B]/90 transition-colors"
+          >
+            Volver al login
+          </Link>
         </div>
       </div>
     );
@@ -83,75 +63,58 @@ export default function PasswordResetPage() {
     <div className="min-h-[70vh] flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-[#1A3A6B] flex items-center justify-center">
+              <span className="text-white font-display font-bold text-sm">C27</span>
+            </div>
+          </Link>
           <h1 className="font-display font-bold text-2xl text-gray-900">
-            {step === 'request' ? 'Recuperar contrasena' : 'Nueva contrasena'}
+            Recuperar contrasena
           </h1>
           <p className="text-gray-500 mt-2">
-            {step === 'request'
-              ? 'Ingresa tu correo y te enviaremos un enlace de recuperacion'
-              : 'Ingresa tu nueva contrasena'}
+            Ingresa tu correo y te enviaremos un enlace de recuperacion
           </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
-          {step === 'request' ? (
-            <form onSubmit={handleRequest} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Correo electronico</label>
-                <div className="relative">
-                  <HiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
-                    required
-                    className="input-field pl-10"
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-red-600 text-sm">{error}</p>
               </div>
-              <button type="submit" disabled={isLoading} className="btn-primary w-full !py-3">
-                {isLoading ? 'Enviando...' : 'Enviar enlace de recuperacion'}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleConfirm} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nueva contrasena</label>
-                <div className="relative">
-                  <HiLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="password"
-                    value={passwords.password}
-                    onChange={(e) => setPasswords((p) => ({ ...p, password: e.target.value }))}
-                    placeholder="Min. 8 caracteres"
-                    required
-                    className="input-field pl-10"
-                  />
-                </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Correo electronico
+              </label>
+              <div className="relative">
+                <HiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError('');
+                  }}
+                  placeholder="tu@email.com"
+                  required
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A3A6B]/20 focus:border-[#1A3A6B] transition-colors"
+                />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmar contrasena</label>
-                <div className="relative">
-                  <HiLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
-                    placeholder="Repite tu contrasena"
-                    required
-                    className="input-field pl-10"
-                  />
-                </div>
-              </div>
-              <button type="submit" disabled={isLoading} className="btn-primary w-full !py-3">
-                {isLoading ? 'Actualizando...' : 'Restablecer contrasena'}
-              </button>
-            </form>
-          )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="w-full py-3 rounded-xl bg-[#1A3A6B] text-white font-semibold text-sm hover:bg-[#1A3A6B]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {mutation.isPending ? 'Enviando...' : 'Enviar enlace de recuperacion'}
+            </button>
+          </form>
 
           <p className="text-center text-sm text-gray-500 mt-5">
-            <Link to="/login" className="text-primary font-semibold hover:underline">
+            <Link to="/login" className="text-[#1A3A6B] font-semibold hover:underline">
               Volver al login
             </Link>
           </p>

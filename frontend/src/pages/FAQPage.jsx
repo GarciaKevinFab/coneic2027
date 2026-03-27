@@ -1,42 +1,57 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { HiChevronDown, HiQuestionMarkCircle } from 'react-icons/hi';
-import institutionalService from '../services/institutionalService';
-import LoadingSpinner from '../components/LoadingSpinner';
 import clsx from 'clsx';
 
-const fallbackFAQs = [
+const faqs = [
   {
     question: 'Cuando y donde se realizara CONEIC 2027?',
-    answer: 'CONEIC 2027 se realizara del 15 al 20 de agosto de 2027 en la ciudad de Lima, Peru. La sede principal sera la Universidad Nacional de Ingenieria.',
+    answer:
+      'CONEIC 2027 se realizara del 15 al 20 de agosto de 2027 en la ciudad de Lima, Peru. La sede principal sera la Universidad Nacional de Ingenieria (UNI).',
   },
   {
     question: 'Quien puede participar en CONEIC 2027?',
-    answer: 'CONEIC esta dirigido a estudiantes de ingenieria civil de universidades peruanas. Tambien pueden participar estudiantes de carreras afines y profesionales del sector.',
+    answer:
+      'CONEIC esta dirigido principalmente a estudiantes de ingenieria civil de universidades peruanas. Tambien pueden participar estudiantes de carreras afines, egresados y profesionales del sector de la construccion.',
   },
   {
-    question: 'Como puedo registrarme?',
-    answer: 'Puedes registrarte creando una cuenta en nuestra plataforma. Luego, desde tu dashboard, podras comprar tu entrada y seleccionar los talleres de tu interes.',
+    question: 'Como puedo registrarme para el evento?',
+    answer:
+      'Puedes registrarte creando una cuenta en nuestra plataforma web. Una vez registrado, verificaras tu correo electronico y desde tu dashboard podras comprar tu entrada y seleccionar los talleres de tu interes.',
   },
   {
-    question: 'Cuales son los metodos de pago?',
-    answer: 'Aceptamos pagos con tarjeta de credito/debito (Visa, Mastercard) y Yape. Todos los pagos son procesados de forma segura a traves de Culqi.',
+    question: 'Cuales son los metodos de pago disponibles?',
+    answer:
+      'Aceptamos pagos con tarjeta de credito/debito (Visa, Mastercard), transferencia bancaria y Yape. Todos los pagos son procesados de forma segura. Recibiras un comprobante digital al completar tu compra.',
+  },
+  {
+    question: 'Que tipos de entrada estan disponibles?',
+    answer:
+      'Ofrecemos tres tipos de entrada: Basico (S/150) con acceso a ponencias y certificado; Estandar (S/280) que incluye talleres, kit de bienvenida y eventos sociales; y Premium (S/400) con acceso total a talleres, cena de gala y merchandising exclusivo.',
   },
   {
     question: 'Puedo inscribirme en varios talleres?',
-    answer: 'Si, dependiendo del tipo de entrada. Las entradas Premium permiten hasta 3 talleres y las VIP incluyen acceso a todos los talleres disponibles.',
+    answer:
+      'Si, dependiendo del tipo de entrada. La entrada Basica no incluye talleres. La entrada Estandar permite inscribirte en 2 talleres practicos. La entrada Premium incluye acceso ilimitado a todos los talleres disponibles.',
   },
   {
-    question: 'Se entregan certificados?',
-    answer: 'Si, todos los participantes reciben certificado de asistencia al congreso. Adicionalmente, se entregan certificados por cada taller completado.',
+    question: 'Se entregan certificados de participacion?',
+    answer:
+      'Si. Todos los participantes reciben un certificado digital de asistencia al congreso. Adicionalmente, se otorgan certificados por cada taller completado. Los certificados pueden ser verificados en nuestra plataforma con un codigo unico.',
   },
   {
-    question: 'Puedo obtener un reembolso?',
-    answer: 'Se permiten reembolsos hasta 30 dias antes del evento. Despues de esa fecha, se puede transferir la entrada a otra persona contactando al comite organizador.',
+    question: 'Puedo obtener un reembolso si no puedo asistir?',
+    answer:
+      'Se permiten reembolsos completos hasta 30 dias antes del inicio del evento. Entre 30 y 15 dias antes se realiza un reembolso del 50%. Despues de esa fecha, puedes transferir tu entrada a otra persona contactando al comite organizador.',
   },
   {
-    question: 'Hay alojamiento incluido?',
-    answer: 'Las entradas no incluyen alojamiento. Sin embargo, tenemos convenios con hoteles cercanos que ofrecen tarifas especiales para participantes del CONEIC.',
+    question: 'Hay alojamiento incluido en la entrada?',
+    answer:
+      'Las entradas no incluyen alojamiento. Sin embargo, tenemos convenios con hoteles y hostales cercanos a la sede que ofrecen tarifas especiales para participantes del CONEIC. La informacion estara disponible en tu dashboard una vez compres tu entrada.',
+  },
+  {
+    question: 'Como puedo contactar al comite organizador?',
+    answer:
+      'Puedes escribirnos a contacto@coneic2027.pe o a traves de nuestras redes sociales (Instagram, Facebook). Tambien puedes visitar la seccion de contacto en nuestra pagina web. El equipo responde en un plazo maximo de 48 horas.',
   },
 ];
 
@@ -55,11 +70,16 @@ function AccordionItem({ item, isOpen, onToggle }) {
           )}
         />
       </button>
-      {isOpen && (
-        <div className="px-5 pb-5 animate-slide-down">
+      <div
+        className={clsx(
+          'overflow-hidden transition-all duration-200',
+          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        )}
+      >
+        <div className="px-5 pb-5">
           <p className="text-gray-600 leading-relaxed text-sm">{item.answer}</p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -67,23 +87,15 @@ function AccordionItem({ item, isOpen, onToggle }) {
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState(0);
 
-  const { data: faqs, isLoading } = useQuery({
-    queryKey: ['faq'],
-    queryFn: institutionalService.getFAQ,
-    placeholderData: null,
-  });
-
-  const faqList = faqs || fallbackFAQs;
-
   return (
     <div>
       {/* Page header */}
-      <section className="bg-gradient-to-br from-primary-900 via-primary to-primary-700 py-16 md:py-20">
+      <section className="bg-gradient-to-br from-[#1A3A6B] via-[#1A3A6B]/90 to-[#1A3A6B]/80 py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-white mb-4">
             Preguntas Frecuentes
           </h1>
-          <p className="text-primary-200 text-lg max-w-2xl mx-auto">
+          <p className="text-blue-200 text-lg max-w-2xl mx-auto">
             Resolvemos tus dudas sobre CONEIC 2027
           </p>
         </div>
@@ -91,24 +103,20 @@ export default function FAQPage() {
 
       <section className="py-12 md:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
-            <LoadingSpinner size="lg" className="py-16" />
-          ) : (
-            <div className="space-y-3">
-              {faqList.map((faq, idx) => (
-                <AccordionItem
-                  key={idx}
-                  item={faq}
-                  isOpen={openIndex === idx}
-                  onToggle={() => setOpenIndex(openIndex === idx ? -1 : idx)}
-                />
-              ))}
-            </div>
-          )}
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => (
+              <AccordionItem
+                key={idx}
+                item={faq}
+                isOpen={openIndex === idx}
+                onToggle={() => setOpenIndex(openIndex === idx ? -1 : idx)}
+              />
+            ))}
+          </div>
 
           {/* Contact CTA */}
-          <div className="mt-12 text-center bg-primary-50 rounded-2xl p-8">
-            <HiQuestionMarkCircle className="w-10 h-10 text-primary mx-auto mb-3" />
+          <div className="mt-12 text-center bg-[#1A3A6B]/5 rounded-2xl p-8">
+            <HiQuestionMarkCircle className="w-10 h-10 text-[#1A3A6B] mx-auto mb-3" />
             <h3 className="font-display font-bold text-lg text-gray-900 mb-2">
               No encontraste tu respuesta?
             </h3>
@@ -117,7 +125,7 @@ export default function FAQPage() {
             </p>
             <a
               href="mailto:contacto@coneic2027.pe"
-              className="btn-primary text-sm"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#1A3A6B] text-white font-semibold text-sm hover:bg-[#1A3A6B]/90 transition-colors"
             >
               Enviar correo
             </a>

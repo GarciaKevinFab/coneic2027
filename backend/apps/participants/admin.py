@@ -7,13 +7,9 @@ from .models import Participant, ParticipantType
 
 @admin.register(ParticipantType)
 class ParticipantTypeAdmin(admin.ModelAdmin):
-    list_display = ["name", "get_display_name", "is_active", "created_at"]
-    list_filter = ["is_active", "name"]
+    list_display = ["name", "is_active", "created_at"]
+    list_filter = ["is_active"]
     search_fields = ["name", "description"]
-
-    @admin.display(description=_("Nombre visible"))
-    def get_display_name(self, obj):
-        return obj.get_name_display()
 
 
 @admin.register(Participant)
@@ -41,7 +37,6 @@ class ParticipantAdmin(admin.ModelAdmin):
         "qr_token",
         "qr_code_preview",
         "accredited_at",
-        "accredited_by",
         "created_at",
         "updated_at",
     ]

@@ -307,7 +307,7 @@ def generate_all_certificates(self, certificate_type="attendance"):
 
     if certificate_type == Certificate.CertificateType.ATTENDANCE:
         participants = Participant.objects.filter(
-            payment_status=Participant.PaymentStatus.CONFIRMED,
+            payment_status=Participant.PaymentStatus.PAID,
             is_accredited=True,
         ).select_related("user")
 

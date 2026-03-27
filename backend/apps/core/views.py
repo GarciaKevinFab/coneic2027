@@ -337,7 +337,7 @@ class AdminAccreditView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        if participant.payment_status != Participant.PaymentStatus.CONFIRMED:
+        if participant.payment_status != Participant.PaymentStatus.PAID:
             return Response(
                 {
                     "detail": "El pago del participante no esta confirmado.",
@@ -348,7 +348,10 @@ class AdminAccreditView(APIView):
 
         participant.is_accredited = True
         participant.accredited_at = timezone.now()
-        participant.save(update_fields=["is_accredited", "accredited_at"])
+        participant.accredited_by = request.user
+        participant.save(
+            update_fields=["is_accredited", "accredited_at", "accredited_by"]
+        )
 
         logger.info(
             "Participant %s accredited by %s",
@@ -381,7 +384,7 @@ class AdminStatsView(APIView):
         # Participant counts
         total_participants = Participant.objects.count()
         confirmed_count = Participant.objects.filter(
-            payment_status=Participant.PaymentStatus.CONFIRMED
+            payment_status=Participant.PaymentStatus.PAID
         ).count()
         accredited_count = Participant.objects.filter(
             is_accredited=True
