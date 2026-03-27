@@ -16,12 +16,14 @@ import {
   HiFlag,
   HiPuzzle,
   HiChatAlt2,
+  HiDownload,
 } from 'react-icons/hi';
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../components/animations';
 import scheduleService from '../services/scheduleService';
 import ScheduleTimeline from '../components/ScheduleTimeline';
 import LoadingSpinner from '../components/LoadingSpinner';
 import clsx from 'clsx';
+import generateSchedulePDF from '../utils/generateSchedulePDF';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -344,6 +346,7 @@ export default function SchedulePage() {
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [typeFilter, setTypeFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'timeline'
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const {
     data: scheduleDays = [],
@@ -384,6 +387,20 @@ export default function SchedulePage() {
   const handleFilterToggle = useCallback((value) => {
     setTypeFilter((prev) => (prev === value ? 'all' : value));
   }, []);
+
+  const handleDownloadPDF = useCallback(async () => {
+    if (isGeneratingPDF || scheduleDays.length === 0) return;
+    setIsGeneratingPDF(true);
+    try {
+      // Small delay so the UI can show loading state before the sync-heavy PDF work
+      await new Promise((r) => setTimeout(r, 50));
+      generateSchedulePDF(scheduleDays);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  }, [isGeneratingPDF, scheduleDays]);
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -533,35 +550,64 @@ export default function SchedulePage() {
                   ))}
                 </StaggerContainer>
 
-                {/* View mode toggle */}
-                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 shrink-0 self-start lg:self-auto shadow-sm">
+                {/* View mode toggle + Download */}
+                <div className="flex items-center gap-2 shrink-0 self-start lg:self-auto">
+                  <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+                    <motion.button
+                      onClick={() => setViewMode('grid')}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={clsx(
+                        'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all',
+                        viewMode === 'grid'
+                          ? 'bg-[#1A3A6B] text-white shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700',
+                      )}
+                    >
+                      <HiViewGrid className="w-4 h-4" />
+                      <span className="hidden sm:inline">Grilla</span>
+                    </motion.button>
+                    <motion.button
+                      onClick={() => setViewMode('timeline')}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={clsx(
+                        'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all',
+                        viewMode === 'timeline'
+                          ? 'bg-[#1A3A6B] text-white shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700',
+                      )}
+                    >
+                      <HiViewList className="w-4 h-4" />
+                      <span className="hidden sm:inline">Timeline</span>
+                    </motion.button>
+                  </div>
+
                   <motion.button
-                    onClick={() => setViewMode('grid')}
+                    onClick={handleDownloadPDF}
+                    disabled={isGeneratingPDF || scheduleDays.length === 0}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={clsx(
-                      'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all',
-                      viewMode === 'grid'
-                        ? 'bg-[#1A3A6B] text-white shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700',
+                      'flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition-all',
+                      'bg-[#F4A524] text-white hover:bg-[#e8931a] hover:shadow-lg',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
                     )}
                   >
-                    <HiViewGrid className="w-4 h-4" />
-                    <span className="hidden sm:inline">Grilla</span>
-                  </motion.button>
-                  <motion.button
-                    onClick={() => setViewMode('timeline')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={clsx(
-                      'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all',
-                      viewMode === 'timeline'
-                        ? 'bg-[#1A3A6B] text-white shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700',
+                    {isGeneratingPDF ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span className="hidden sm:inline">Generando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <HiDownload className="w-4 h-4" />
+                        <span className="hidden sm:inline">Descargar PDF</span>
+                      </>
                     )}
-                  >
-                    <HiViewList className="w-4 h-4" />
-                    <span className="hidden sm:inline">Timeline</span>
                   </motion.button>
                 </div>
               </div>

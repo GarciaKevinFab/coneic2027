@@ -1,10 +1,28 @@
-import { useRef } from 'react';
+import { useRef, lazy, Suspense, Component } from 'react';
 import { Link } from 'react-router-dom';
 import { HiCalendar, HiLocationMarker, HiArrowRight } from 'react-icons/hi';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import FloatingElement from './animations/FloatingElement';
 import ParticleField from './animations/ParticleField';
 import useCountdown from '../hooks/useCountdown';
+
+/* ─── Lazy-loaded 3D scene (won't block initial render) ─── */
+const HeroScene3D = lazy(() => import('./HeroScene3D'));
+
+/* ─── Error boundary: silently hides 3D if WebGL unavailable ─── */
+class Scene3DErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
 
 /* ─── Animated countdown digit with flip effect ─── */
 function CountdownDigit({ value }) {
@@ -69,6 +87,13 @@ export default function Hero() {
         background: 'linear-gradient(135deg, #0f2847 0%, #1A3A6B 40%, #1a4f8a 100%)',
       }}
     >
+      {/* ═══════════════ 3D Animated background ═══════════════ */}
+      <Scene3DErrorBoundary>
+        <Suspense fallback={null}>
+          <HeroScene3D />
+        </Suspense>
+      </Scene3DErrorBoundary>
+
       {/* ═══════════════ Animated background blobs ═══════════════ */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Top-right warm blob */}
