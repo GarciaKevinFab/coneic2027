@@ -5,7 +5,7 @@ from . import views
 app_name = "core"
 
 urlpatterns = [
-    # Admin participants
+    # Participants management
     path(
         "participants/",
         views.AdminParticipantsView.as_view(),
@@ -16,25 +16,25 @@ urlpatterns = [
         views.ExportParticipantsView.as_view(),
         name="admin-participants-export",
     ),
-    # Admin payments
+    # Payments report
     path(
         "payments/",
         views.AdminPaymentsView.as_view(),
         name="admin-payments",
     ),
-    # Admin accreditation
+    # Accreditation
     path(
         "accredit/",
         views.AdminAccreditView.as_view(),
         name="admin-accredit",
     ),
-    # Admin dashboard stats
+    # Dashboard stats
     path(
         "stats/",
         views.AdminStatsView.as_view(),
         name="admin-stats",
     ),
-    # Admin workshops report
+    # Workshop occupancy report
     path(
         "workshops/report/",
         views.AdminWorkshopsReportView.as_view(),
