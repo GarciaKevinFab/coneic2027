@@ -360,7 +360,7 @@ export default function PurchasePage() {
               <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between">
                 <span className="font-semibold text-gray-900">Total</span>
                 <span className="font-bold text-[#1A3A6B] text-lg">
-                  S/ {selectedType?.price?.toFixed(2)}
+                  S/ {Number(selectedType?.price || 0).toFixed(2)}
                 </span>
               </div>
             </div>

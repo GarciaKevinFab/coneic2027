@@ -1,13 +1,15 @@
 import axios from 'axios';
 import useAuthStore from '../store/authStore';
 
-const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const NGROK_URL = 'https://b09c-2803-a3e0-15a1-51b0-59a0-f08c-8baa-8e2f.ngrok-free.app';
+const envUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? NGROK_URL : 'http://localhost:8000');
 const API_BASE_URL = envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
   timeout: 15000,
 });
