@@ -33,7 +33,7 @@ export default function PaymentForm({ amount, onSubmit, isLoading = false }) {
       <div className="bg-primary-50 rounded-xl p-4 text-center">
         <p className="text-sm text-primary-600 mb-1">Total a pagar</p>
         <p className="text-3xl font-display font-bold text-primary">
-          S/ {amount?.toFixed(2) || '0.00'}
+          S/ {Number(amount || 0).toFixed(2) || '0.00'}
         </p>
       </div>
 
@@ -180,7 +180,7 @@ export default function PaymentForm({ amount, onSubmit, isLoading = false }) {
           'disabled:opacity-50 disabled:cursor-not-allowed'
         )}
       >
-        {isLoading ? 'Procesando pago...' : `Pagar S/ ${amount?.toFixed(2) || '0.00'}`}
+        {isLoading ? 'Procesando pago...' : `Pagar S/ ${Number(amount || 0).toFixed(2) || '0.00'}`}
       </button>
 
       <p className="text-xs text-center text-gray-400">

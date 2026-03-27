@@ -93,7 +93,7 @@ export default function PaymentsReportPage() {
                 <div>
                   <p className="text-sm text-gray-500">Promedio por pago</p>
                   <p className="text-xl font-display font-bold text-gray-900">
-                    S/ {totalCount > 0 ? (totalRevenue / totalCount).toFixed(2) : '0.00'}
+                    S/ {totalCount > 0 ? Number(totalRevenue / totalCount).toFixed(2) : '0.00'}
                   </p>
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function PaymentsReportPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                            S/ {(payment.amount || 0).toFixed(2)}
+                            S/ {Number(payment.amount || 0).toFixed(2)}
                           </td>
                           <td className="px-4 py-3">
                             <span
