@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { HiMail, HiLockClosed } from 'react-icons/hi';
 import authService from '../services/authService';
 import useAuthStore from '../store/authStore';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const storeLogin = useAuthStore((s) => s.login);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
@@ -17,22 +15,28 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (data) => {
-      // Call Zustand store login to update in-memory state
-      storeLogin(data.user, data.access, data.refresh);
-      // Wait for Zustand persist middleware to flush to localStorage,
-      // then do a full page navigation to ensure ProtectedRoute rehydrates correctly
-      const checkAndRedirect = () => {
-        const stored = JSON.parse(localStorage.getItem('coneic-auth') || '{}');
-        if (stored.state?.isAuthenticated) {
-          window.location.replace(from);
-        } else {
-          setTimeout(checkAndRedirect, 20);
-        }
+      // Write directly to localStorage so it survives the page reload
+      const storeData = {
+        state: {
+          user: data.user,
+          accessToken: data.access,
+          refreshToken: data.refresh,
+          isAuthenticated: true,
+          _hasHydrated: false,
+        },
+        version: 0,
       };
-      setTimeout(checkAndRedirect, 10);
+      localStorage.setItem('coneic-auth', JSON.stringify(storeData));
+      // Full page reload — Zustand will rehydrate from localStorage
+      window.location.href = from;
     },
     onError: (err) => {
-      const msg = err.response?.data?.detail || 'Credenciales invalidas. Intenta de nuevo.';
+      const data = err.response?.data;
+      if (!data) {
+        setError('Error de conexion. Intenta de nuevo.');
+        return;
+      }
+      const msg = data.detail || data.non_field_errors?.[0] || 'Credenciales invalidas.';
       setError(typeof msg === 'string' ? msg : 'Error al iniciar sesion.');
     },
   });
