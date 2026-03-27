@@ -8,7 +8,6 @@ const useAuthStore = create(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
-      _hasHydrated: false,
 
       login: (user, accessToken, refreshToken) => {
         set({
@@ -50,10 +49,6 @@ const useAuthStore = create(
         const user = get().user;
         return !!user?.ticket_id;
       },
-
-      setHasHydrated: (state) => {
-        set({ _hasHydrated: state });
-      },
     }),
     {
       name: 'coneic-auth',
@@ -64,11 +59,33 @@ const useAuthStore = create(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        useAuthStore.getState().setHasHydrated(true);
-      },
     }
   )
 );
+
+// Hydration tracking - external to avoid persist issues
+let _hydrated = false;
+const _hydratedCallbacks = new Set();
+
+const originalRehydrate = useAuthStore.persist.onFinishHydration;
+useAuthStore.persist.onFinishHydration(() => {
+  _hydrated = true;
+  _hydratedCallbacks.forEach((cb) => cb());
+  _hydratedCallbacks.clear();
+});
+
+// Also check if already hydrated synchronously
+if (useAuthStore.persist.hasHydrated()) {
+  _hydrated = true;
+}
+
+export const getHasHydrated = () => _hydrated;
+export const onHydrate = (cb) => {
+  if (_hydrated) {
+    cb();
+  } else {
+    _hydratedCallbacks.add(cb);
+  }
+};
 
 export default useAuthStore;
