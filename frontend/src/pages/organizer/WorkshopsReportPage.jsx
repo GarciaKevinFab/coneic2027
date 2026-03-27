@@ -1,5 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { HiAcademicCap, HiUserGroup, HiClock, HiLocationMarker } from 'react-icons/hi';
+import {
+  HiAcademicCap,
+  HiUserGroup,
+  HiClock,
+  HiLocationMarker,
+} from 'react-icons/hi';
 import adminService from '../../services/adminService';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import clsx from 'clsx';
@@ -17,7 +22,7 @@ export default function WorkshopsReportPage() {
   const workshops = data?.workshops || data || [];
 
   return (
-    <div className="page-container">
+    <div>
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900">
@@ -29,10 +34,16 @@ export default function WorkshopsReportPage() {
       </div>
 
       {isLoading ? (
-        <LoadingSpinner size="lg" label="Cargando talleres..." className="py-20" />
+        <LoadingSpinner
+          size="lg"
+          label="Cargando talleres..."
+          className="py-20"
+        />
       ) : isError ? (
         <div className="card p-8 text-center">
-          <p className="text-gray-500">Error al cargar el reporte. Intenta de nuevo.</p>
+          <p className="text-gray-500">
+            Error al cargar el reporte. Intenta de nuevo.
+          </p>
         </div>
       ) : workshops.length > 0 ? (
         <div className="space-y-4">
@@ -46,7 +57,7 @@ export default function WorkshopsReportPage() {
               <div key={workshop.id || idx} className="card p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-display font-bold text-primary text-lg truncate">
+                    <h3 className="font-display font-bold text-[#1A3A6B] text-lg truncate">
                       {workshop.name}
                     </h3>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
@@ -73,12 +84,20 @@ export default function WorkshopsReportPage() {
                   <div className="text-right shrink-0">
                     <p className="text-2xl font-display font-bold text-gray-900">
                       {enrolled}
-                      <span className="text-gray-400 text-sm font-normal">/{capacity}</span>
+                      <span className="text-gray-400 text-sm font-normal">
+                        /{capacity}
+                      </span>
                     </p>
-                    <p className={clsx(
-                      'text-xs font-medium mt-0.5',
-                      isFull ? 'text-red-500' : percent >= 80 ? 'text-amber-500' : 'text-green-500'
-                    )}>
+                    <p
+                      className={clsx(
+                        'text-xs font-medium mt-0.5',
+                        isFull
+                          ? 'text-red-500'
+                          : percent >= 80
+                            ? 'text-amber-500'
+                            : 'text-green-500'
+                      )}
+                    >
                       {isFull ? 'Completo' : `${percent}% ocupado`}
                     </p>
                   </div>
@@ -89,7 +108,11 @@ export default function WorkshopsReportPage() {
                   <div
                     className={clsx(
                       'h-full rounded-full transition-all duration-700',
-                      percent >= 90 ? 'bg-red-500' : percent >= 70 ? 'bg-accent' : 'bg-primary'
+                      percent >= 90
+                        ? 'bg-red-500'
+                        : percent >= 70
+                          ? 'bg-[#F4A524]'
+                          : 'bg-[#1A3A6B]'
                     )}
                     style={{ width: `${Math.min(percent, 100)}%` }}
                   />
@@ -100,11 +123,15 @@ export default function WorkshopsReportPage() {
         </div>
       ) : (
         <div className="card p-8 sm:p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-4">
-            <HiAcademicCap className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 rounded-2xl bg-[#1A3A6B]/5 flex items-center justify-center mx-auto mb-4">
+            <HiAcademicCap className="w-8 h-8 text-[#1A3A6B]" />
           </div>
-          <h3 className="font-display font-bold text-gray-900 text-lg mb-2">Sin talleres</h3>
-          <p className="text-gray-500 text-sm">No hay talleres registrados en el sistema.</p>
+          <h3 className="font-display font-bold text-gray-900 text-lg mb-2">
+            Sin talleres
+          </h3>
+          <p className="text-gray-500 text-sm">
+            No hay talleres registrados en el sistema.
+          </p>
         </div>
       )}
     </div>
