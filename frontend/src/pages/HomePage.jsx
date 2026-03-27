@@ -10,14 +10,12 @@ import {
 } from 'react-icons/hi';
 import { motion } from 'motion/react';
 import Hero from '../components/Hero';
-import SponsorGrid from '../components/SponsorGrid';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   ScrollReveal,
   StaggerContainer,
   StaggerItem,
   AnimatedCounter,
-  InfiniteMarquee,
 } from '../components/animations';
 import scheduleService from '../services/scheduleService';
 import institutionalService from '../services/institutionalService';
@@ -58,17 +56,12 @@ const stats = [
 
 const tierOrder = ['platinum', 'gold', 'silver', 'bronze'];
 
-function getAllSponsorsFlat(sponsors) {
-  if (!sponsors || typeof sponsors !== 'object') return [];
-  const all = [];
-  for (const tier of tierOrder) {
-    const items = sponsors[tier];
-    if (Array.isArray(items)) {
-      all.push(...items);
-    }
-  }
-  return all;
-}
+const tierConfig = {
+  platinum: { label: 'Platino', color: '#6B7280', cols: 'grid-cols-1 sm:grid-cols-2', borderColor: 'border-l-gray-400' },
+  gold: { label: 'Oro', color: '#F4A524', cols: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', borderColor: 'border-l-[#F4A524]' },
+  silver: { label: 'Plata', color: '#9CA3AF', cols: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', borderColor: 'border-l-gray-300' },
+  bronze: { label: 'Bronce', color: '#B45309', cols: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', borderColor: 'border-l-amber-700' },
+};
 
 function hasSponsorData(sponsors) {
   if (!sponsors || typeof sponsors !== 'object') return false;
@@ -93,7 +86,6 @@ export default function HomePage() {
   // Take first day's items for preview
   const schedule = scheduleData?.[0]?.items?.slice(0, 4) || [];
 
-  const allSponsors = getAllSponsorsFlat(sponsors);
   const hasSponsors = hasSponsorData(sponsors);
 
   return (
@@ -301,33 +293,55 @@ export default function HomePage() {
           </ScrollReveal>
 
           {hasSponsors ? (
-            <ScrollReveal delay={0.2}>
-              <InfiniteMarquee speed={35} pauseOnHover className="py-8">
-                {allSponsors.map((sponsor, idx) => (
-                  <div
-                    key={sponsor.id || idx}
-                    className="flex-shrink-0 flex items-center justify-center w-48 h-24 bg-gray-50 rounded-2xl border border-gray-100 px-6 hover:shadow-md hover:border-gray-200 transition-all duration-300"
-                  >
-                    {sponsor.logo_url || sponsor.logo ? (
-                      <img
-                        src={sponsor.logo_url || sponsor.logo}
-                        alt={sponsor.name}
-                        className="max-h-14 max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-500"
-                      />
-                    ) : (
-                      <span className="text-gray-400 font-display font-bold text-sm text-center">
-                        {sponsor.name}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </InfiniteMarquee>
-
-              {/* Still show the full grid below for detailed tier view */}
-              <div className="mt-16">
-                <SponsorGrid sponsors={sponsors} />
-              </div>
-            </ScrollReveal>
+            <div className="space-y-12">
+              {tierOrder.map((tier) => {
+                const items = sponsors[tier];
+                if (!Array.isArray(items) || items.length === 0) return null;
+                const config = tierConfig[tier];
+                return (
+                  <ScrollReveal key={tier} delay={0.1}>
+                    <div>
+                      <div className="flex items-center gap-3 mb-6">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: config.color }}
+                        />
+                        <h3 className="font-display font-bold text-lg text-gray-700 tracking-wide uppercase">
+                          {config.label}
+                        </h3>
+                        <div className="flex-1 h-px bg-gray-200" />
+                      </div>
+                      <StaggerContainer
+                        className={`grid ${config.cols} gap-4`}
+                        stagger={0.08}
+                      >
+                        {items.map((sponsor, idx) => (
+                          <StaggerItem key={sponsor.id || idx}>
+                            <motion.div
+                              whileHover={{ y: -4, boxShadow: '0 12px 24px rgba(0,0,0,0.08)' }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                              className={`bg-white rounded-xl border border-gray-100 p-6 flex items-center justify-center min-h-[80px] border-l-4 ${config.borderColor} cursor-default`}
+                            >
+                              {sponsor.logo_url || sponsor.logo ? (
+                                <img
+                                  src={sponsor.logo_url || sponsor.logo}
+                                  alt={sponsor.name}
+                                  className="max-h-14 max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-500"
+                                />
+                              ) : (
+                                <span className="text-gray-500 font-display font-bold text-sm text-center">
+                                  {sponsor.name}
+                                </span>
+                              )}
+                            </motion.div>
+                          </StaggerItem>
+                        ))}
+                      </StaggerContainer>
+                    </div>
+                  </ScrollReveal>
+                );
+              })}
+            </div>
           ) : (
             <ScrollReveal delay={0.2}>
               <div className="text-center py-16">

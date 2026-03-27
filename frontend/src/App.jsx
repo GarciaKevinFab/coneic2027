@@ -7,6 +7,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrganizerRoute from './components/OrganizerRoute';
 import { ScrollProgress } from './components/animations';
+import WhatsAppFAB from './components/WhatsAppFAB';
 
 // Public pages
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -78,6 +79,7 @@ function PublicLayout() {
         </Suspense>
       </main>
       <Footer />
+      <WhatsAppFAB />
     </div>
   );
 }
@@ -97,6 +99,7 @@ function DashboardLayout() {
           </AnimatePresence>
         </Suspense>
       </main>
+      <WhatsAppFAB />
     </div>
   );
 }

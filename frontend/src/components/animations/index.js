@@ -5,3 +5,4 @@ export { default as ParallaxImage } from './ParallaxImage';
 export { default as ScrollProgress } from './ScrollProgress';
 export { default as InfiniteMarquee } from './InfiniteMarquee';
 export { default as FloatingElement } from './FloatingElement';
+export { default as ParticleField } from './ParticleField';

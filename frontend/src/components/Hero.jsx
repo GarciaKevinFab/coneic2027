@@ -3,21 +3,22 @@ import { Link } from 'react-router-dom';
 import { HiCalendar, HiLocationMarker, HiArrowRight } from 'react-icons/hi';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import FloatingElement from './animations/FloatingElement';
+import ParticleField from './animations/ParticleField';
 import useCountdown from '../hooks/useCountdown';
 
 /* ─── Animated countdown digit with flip effect ─── */
 function CountdownDigit({ value }) {
   const display = String(value).padStart(2, '0');
   return (
-    <div className="relative overflow-hidden" style={{ minWidth: '1.6em', height: '1.2em' }}>
+    <div className="relative overflow-hidden h-10 sm:h-12 md:h-14 flex items-center justify-center">
       <AnimatePresence mode="popLayout">
         <motion.span
           key={display}
-          initial={{ y: 24, opacity: 0, filter: 'blur(4px)' }}
+          initial={{ y: 30, opacity: 0, filter: 'blur(4px)' }}
           animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-          exit={{ y: -24, opacity: 0, filter: 'blur(4px)' }}
+          exit={{ y: -30, opacity: 0, filter: 'blur(4px)' }}
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white block text-center absolute inset-0"
+          className="text-3xl sm:text-4xl md:text-5xl font-display font-black text-white block"
         >
           {display}
         </motion.span>
@@ -183,6 +184,9 @@ export default function Hero() {
         </FloatingElement>
       </div>
 
+      {/* ═══════════════ Particle field ═══════════════ */}
+      <ParticleField className="absolute inset-0 z-0" />
+
       {/* ═══════════════ Main content ═══════════════ */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 z-10">
         <motion.div
@@ -269,7 +273,7 @@ export default function Hero() {
             ].map((item, i) => (
               <motion.div
                 key={item.label}
-                className="backdrop-blur-sm rounded-2xl p-3 sm:p-4 border border-white/10 flex flex-col items-center justify-center"
+                className="backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-white/10 flex flex-col items-center justify-center min-h-[100px] sm:min-h-[110px]"
                 style={{ background: 'rgba(255,255,255,0.08)' }}
                 whileHover={{
                   scale: 1.06,
