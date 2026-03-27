@@ -24,14 +24,26 @@ export default function RegisterPage() {
       setSuccess(true);
     },
     onError: (error) => {
-      const detail = error.response?.data?.detail;
-      if (typeof detail === 'string') {
-        setErrors({ general: detail });
-      } else if (typeof detail === 'object') {
-        setErrors(detail);
-      } else {
-        setErrors({ general: 'Ocurrio un error al registrarte. Intenta de nuevo.' });
+      const data = error.response?.data;
+      if (!data) {
+        setErrors({ general: 'Error de conexion. Intenta de nuevo.' });
+        return;
       }
+      // DRF returns field errors as { field: ["error1", ...] }
+      const newErrors = {};
+      for (const [key, value] of Object.entries(data)) {
+        if (key === 'detail') {
+          newErrors.general = typeof value === 'string' ? value : JSON.stringify(value);
+        } else if (key === 'non_field_errors') {
+          newErrors.general = Array.isArray(value) ? value.join(' ') : value;
+        } else {
+          newErrors[key] = Array.isArray(value) ? value.join(' ') : value;
+        }
+      }
+      if (Object.keys(newErrors).length === 0) {
+        newErrors.general = 'Ocurrio un error al registrarte. Intenta de nuevo.';
+      }
+      setErrors(newErrors);
     },
   });
 
@@ -61,7 +73,15 @@ export default function RegisterPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    const { confirm_password, ...payload } = formData;
+    const payload = {
+      full_name: formData.full_name,
+      email: formData.email,
+      password: formData.password,
+      password_confirm: formData.confirm_password,
+      phone: formData.phone,
+      university: formData.university,
+      career: formData.career,
+    };
     mutation.mutate(payload);
   };
 
