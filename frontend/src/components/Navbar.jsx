@@ -62,12 +62,18 @@ export default function Navbar() {
   const location = useLocation();
   const dropdownRef = useRef(null);
 
+  const isHomePage = location.pathname === '/';
+
   useEffect(() => {
+    if (!isHomePage) {
+      setScrolled(true);
+      return;
+    }
     const handleScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isHomePage]);
 
   useEffect(() => {
     setMobileOpen(false);

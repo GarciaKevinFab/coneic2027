@@ -27,11 +27,11 @@ UNIVERSITIES = [
 ]
 
 CAREERS = [
-    "Ingeniería de Computación",
-    "Ingeniería de Sistemas",
-    "Ciencias de la Computación",
-    "Ingeniería Informática",
-    "Ingeniería de Software",
+    "Ingeniería Civil",
+    "Ingeniería Civil y Ambiental",
+    "Ingeniería de Construcción",
+    "Ingeniería Estructural",
+    "Ingeniería Geotécnica",
 ]
 
 CITIES = [
@@ -66,6 +66,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Seeding database...")
 
+        self._cleanup_existing_data()
         self._create_event_info()
         self._create_sponsors()
         self._create_committee()
@@ -78,39 +79,64 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Database seeded successfully!"))
 
+    def _cleanup_existing_data(self):
+        """Clean up existing data in the correct order to avoid protected FK errors."""
+        from apps.participants.models import Participant
+        from apps.tickets.models import Ticket
+        from apps.schedule.models import ScheduleDay
+
+        # Delete in order: participants -> tickets -> ticket types, workshops, etc.
+        Participant.objects.all().delete()
+        Ticket.objects.all().delete()
+        ScheduleDay.objects.all().delete()
+
+        # Delete test users (keep superusers that were not created by seed)
+        User.objects.filter(email__endswith="@test.coneic2027.pe").delete()
+        User.objects.filter(email="organizador@coneic2027.pe").delete()
+
+        self.stdout.write("  Cleaned up existing data")
+
     def _create_event_info(self):
         from apps.institutional.models import EventInfo
 
         EventInfo.objects.all().delete()
         EventInfo.objects.create(
-            name="CONEIC 2027",
+            name="XXXIV CONEIC Huancayo 2027",
             description=(
-                "El Congreso Nacional de Estudiantes de Ingeniería de Computación "
-                "es el evento académico y tecnológico más importante para estudiantes "
-                "de computación en el Perú. Reúne a las mejores universidades del país "
-                "para compartir conocimiento, innovación y networking."
+                "El Congreso Nacional de Estudiantes de Ingeniería Civil (CONEIC) "
+                "es el evento académico y estudiantil más grande de ingeniería civil "
+                "en el Perú. Organizado por la ANEIC Perú y la Universidad Nacional "
+                "del Centro del Perú (UNCP), reúne a estudiantes, docentes y "
+                "profesionales del sector bajo la premisa de la innovación y "
+                "transformación en la ingeniería civil."
             ),
-            edition="XXVIII Edición",
-            host_university="Universidad Nacional de Ingeniería",
-            city="Lima",
+            edition="XXXIV Edición",
+            host_university="Universidad Nacional del Centro del Perú (UNCP)",
+            city="Huancayo",
             country="Perú",
-            start_date=date(2027, 8, 18),
+            start_date=date(2027, 8, 15),
             end_date=date(2027, 8, 20),
-            venue="Centro de Convenciones UNI",
+            venue="Campus Universitario UNCP - Huancayo, Junín",
             mission=(
-                "Fomentar el desarrollo académico y profesional de los estudiantes "
-                "de ingeniería de computación a través del intercambio de conocimiento, "
-                "la innovación tecnológica y el networking entre universidades."
+                "Fomentar el desarrollo académico, profesional y humano de los "
+                "estudiantes de ingeniería civil del Perú a través del intercambio "
+                "de conocimiento, la innovación tecnológica y el fortalecimiento de "
+                "la comunidad de ingeniería civil a nivel nacional."
             ),
             vision=(
                 "Ser el congreso referente en Latinoamérica que impulse la formación "
-                "de líderes tecnológicos comprometidos con el desarrollo del país."
+                "integral de futuros ingenieros civiles comprometidos con el desarrollo "
+                "sostenible e infraestructura del país."
             ),
             history=(
-                "El CONEIC se realiza desde 1999 y ha sido sede de las mejores "
-                "universidades del Perú. Cada año reúne a más de 1500 estudiantes "
-                "de todo el país para participar en talleres, ponencias y actividades "
-                "de networking que fortalecen la comunidad de ingeniería de computación."
+                "El CONEIC se realiza desde 1992, teniendo su primera edición en "
+                "Cajamarca. A lo largo de más de 30 años ha sido sede de las mejores "
+                "universidades del Perú incluyendo Arequipa, Lima, Cusco, Pucallpa y "
+                "Huaraz. Cada año reúne a más de 1500 estudiantes de todo el país para "
+                "participar en ponencias magistrales, talleres prácticos, visitas "
+                "técnicas, concursos y actividades de networking que fortalecen la "
+                "comunidad de ingeniería civil peruana. La edición XXXIV marca el "
+                "regreso a Huancayo, después de haber sido sede en 2012."
             ),
         )
         self.stdout.write("  Created event info")
@@ -121,25 +147,21 @@ class Command(BaseCommand):
         Sponsor.objects.all().delete()
         sponsors_data = [
             # Platinum
-            ("Microsoft", "https://microsoft.com", "platinum", 1),
-            ("Google Cloud", "https://cloud.google.com", "platinum", 2),
-            ("AWS", "https://aws.amazon.com", "platinum", 3),
+            ("COSAPI", "https://cosapi.com.pe", "platinum", 1),
+            ("Graña y Montero (GyM)", "https://gym.com.pe", "platinum", 2),
+            ("ODEBRECHT Perú", "https://odebrecht.com.pe", "platinum", 3),
             # Gold
-            ("IBM", "https://ibm.com", "gold", 1),
-            ("Oracle", "https://oracle.com", "gold", 2),
-            ("Nvidia", "https://nvidia.com", "gold", 3),
+            ("Sika Perú", "https://per.sika.com", "gold", 1),
+            ("UNICON", "https://unicon.com.pe", "gold", 2),
+            ("Cementos Pacasmayo", "https://cementospacasmayo.com.pe", "gold", 3),
             # Silver
-            ("GitHub", "https://github.com", "silver", 1),
-            ("JetBrains", "https://jetbrains.com", "silver", 2),
-            ("DigitalOcean", "https://digitalocean.com", "silver", 3),
+            ("CEMENTOS SOL", "https://unacem.com.pe", "silver", 1),
+            ("Aceros Arequipa", "https://acerosarequipa.com", "silver", 2),
+            ("CAPECO", "https://capeco.org", "silver", 3),
             # Bronze
-            ("Platzi", "https://platzi.com", "bronze", 1),
-            ("Código Facilito", "https://codigofacilito.com", "bronze", 2),
-            ("Educación IT", "https://educacionit.com", "bronze", 3),
-            # Media
-            ("TechCrunch Latam", "https://techcrunch.com", "media", 1),
-            ("Gestión", "https://gestion.pe", "media", 2),
-            ("Hipertextual", "https://hipertextual.com", "media", 3),
+            ("Topcon", "https://topcon.com", "bronze", 1),
+            ("Hilti", "https://hilti.com.pe", "bronze", 2),
+            ("PUCP - Ingeniería Civil", "https://pucp.edu.pe", "bronze", 3),
         ]
         for name, website, tier, order in sponsors_data:
             Sponsor.objects.create(
@@ -152,11 +174,11 @@ class Command(BaseCommand):
 
         OrganizingCommittee.objects.all().delete()
         members = [
-            ("Dr. Ricardo Mendoza", "Presidente del Comité", "Universidad Nacional de Ingeniería"),
-            ("Ing. Sofía Castillo", "Vicepresidenta Académica", "Universidad Nacional de Ingeniería"),
-            ("Carlos Gutiérrez", "Director de Logística", "Universidad Nacional Mayor de San Marcos"),
-            ("Ana Torres", "Directora de Comunicaciones", "Pontificia Universidad Católica del Perú"),
-            ("Miguel Flores", "Director de Tecnología", "Universidad Nacional de Ingeniería"),
+            ("Ing. Roberto Huamán Quispe", "Presidente del Comité Organizador", "UNCP - Facultad de Ingeniería Civil"),
+            ("Ing. María Espinoza Rojas", "Vicepresidenta Académica", "UNCP - Facultad de Ingeniería Civil"),
+            ("Est. Kevin García Torres", "Director de Tecnología", "UNCP - Facultad de Ingeniería Civil"),
+            ("Est. Lucía Mendoza Palacios", "Directora de Comunicaciones", "UNCP - Facultad de Ingeniería Civil"),
+            ("Est. Carlos Ríos Huamaní", "Director de Logística", "UNCP - Facultad de Ingeniería Civil"),
         ]
         for i, (name, role, univ) in enumerate(members):
             OrganizingCommittee.objects.create(
@@ -208,7 +230,7 @@ class Command(BaseCommand):
                 "benefits": [
                     "Todo lo incluido en VIP",
                     "Acceso a TODOS los talleres",
-                    "Visita técnica a empresa tecnológica",
+                    "Visita técnica a obra de construcción",
                     "Cena de gala",
                     "Polo exclusivo CONEIC 2027",
                     "Mención en el programa oficial",
@@ -260,16 +282,66 @@ class Command(BaseCommand):
 
         Speaker.objects.all().delete()
         speakers_data = [
-            ("Dr. Alejandro Ríos", "Experto en inteligencia artificial con 15 años de experiencia en Google DeepMind.", "IA Generativa: El Futuro de la Computación", "Google DeepMind"),
-            ("Ing. Valentina Paredes", "Arquitecta de soluciones cloud en AWS con especialización en sistemas distribuidos.", "Arquitectura de Microservicios en la Nube", "Amazon Web Services"),
-            ("Dr. Fernando Quiroz", "Investigador en ciberseguridad y profesor en el MIT.", "Ciberseguridad en la Era de la IA", "MIT"),
-            ("Ing. Camila Rojas", "Líder técnica en Meta, especialista en sistemas de realidad virtual.", "Metaverso y Realidad Extendida", "Meta"),
-            ("Dr. Sebastián Vargas", "Científico de datos senior en Netflix, PhD en Stanford.", "Big Data y Sistemas de Recomendación", "Netflix"),
-            ("Ing. Patricia Luna", "Directora de ingeniería en Rappi, experta en fintech.", "Innovación Fintech en Latinoamérica", "Rappi"),
-            ("Dr. Mateo Salazar", "Investigador en computación cuántica en IBM Research.", "Computación Cuántica: Estado Actual y Futuro", "IBM Research"),
-            ("Ing. Gabriela Mendoza", "DevOps lead en Microsoft, especialista en CI/CD.", "DevOps y SRE: Prácticas Modernas", "Microsoft"),
-            ("Dr. Diego Herrera", "Profesor de blockchain y sistemas distribuidos en Stanford.", "Blockchain Beyond Crypto", "Stanford University"),
-            ("Ing. Lucía Morales", "CTO de una startup de healthtech, ex-Google.", "Emprendimiento Tech desde la Universidad", "HealthAI Labs"),
+            (
+                "Dr. Jorge Alva Hurtado",
+                "Experto en ingeniería geotécnica y sísmica con más de 25 años de experiencia. Profesor principal en la UNI y consultor internacional en proyectos de cimentaciones.",
+                "Ingeniería Geotécnica Sísmica: Avances y Desafíos en el Perú",
+                "Universidad Nacional de Ingeniería",
+            ),
+            (
+                "Ing. Sandra Cecilia Quispe Meza",
+                "Especialista en tecnología BIM y gestión de proyectos de construcción. Gerente BIM en COSAPI con certificación buildingSMART.",
+                "Implementación BIM en Proyectos de Infraestructura a Gran Escala",
+                "COSAPI",
+            ),
+            (
+                "Dr. Carlos Zavala Toledo",
+                "Investigador en ingeniería estructural y diseño sísmico. Director del CISMID y referente en vulnerabilidad sísmica de edificaciones.",
+                "Diseño Sísmico Basado en Desempeño: Nuevas Tendencias",
+                "CISMID - UNI",
+            ),
+            (
+                "Ing. Patricia Giménez Rojas",
+                "Especialista en construcción sostenible y certificación LEED. Directora de sostenibilidad en Graña y Montero.",
+                "Construcción Sostenible y Certificación LEED en el Perú",
+                "Graña y Montero (GyM)",
+            ),
+            (
+                "Dr. Rafael Salinas Basualdo",
+                "Investigador en materiales de construcción innovadores y concreto de alto rendimiento. PhD en Ingeniería Civil por la Universidad de Texas.",
+                "Concreto de Ultra Alto Rendimiento: Aplicaciones en Infraestructura",
+                "Pontificia Universidad Católica del Perú",
+            ),
+            (
+                "Ing. Mónica Álvarez Prado",
+                "Experta en gestión de recursos hídricos e ingeniería hidráulica. Consultora del Banco Mundial para proyectos de agua y saneamiento en Latinoamérica.",
+                "Gestión Integral de Recursos Hídricos y Cambio Climático",
+                "Banco Mundial - Perú",
+            ),
+            (
+                "Dr. Eduardo Fierro Ramos",
+                "Especialista en ingeniería de puentes y estructuras especiales. Más de 20 años de experiencia en diseño de puentes atirantados.",
+                "Diseño y Construcción de Puentes Modernos en los Andes",
+                "MTC - Provías Nacional",
+            ),
+            (
+                "Ing. Fabiola Torres Méndez",
+                "Especialista en topografía digital y fotogrametría con drones. Pionera en la implementación de LiDAR aéreo para obras civiles en el Perú.",
+                "Topografía Digital y Drones en la Ingeniería Civil Moderna",
+                "Topcon Perú",
+            ),
+            (
+                "Dr. Hernán Portocarrero Inga",
+                "Profesor e investigador en ingeniería de transportes y planificación vial. Consultor del MTC para el Plan Vial Nacional.",
+                "Planificación de Infraestructura Vial Sostenible en el Perú",
+                "Universidad Nacional de Ingeniería",
+            ),
+            (
+                "Ing. Claudia Ramos Villanueva",
+                "Gerente de proyectos con experiencia en megaproyectos de infraestructura. Especialista en costos, presupuestos y gestión de riesgos en construcción.",
+                "Gestión de Megaproyectos: Lecciones Aprendidas en el Perú",
+                "CAPECO",
+            ),
         ]
         speakers = []
         for name, bio, topic, org in speakers_data:
@@ -285,92 +357,134 @@ class Command(BaseCommand):
 
         Workshop.objects.all().delete()
         base_date = timezone.make_aware(
-            timezone.datetime(2027, 8, 18, 9, 0)
+            timezone.datetime(2027, 8, 15, 9, 0)
         )
 
         workshops_data = [
             # Day 1
             {
-                "name": "Taller de Machine Learning con Python",
-                "description": "Aprende a construir modelos de ML desde cero usando scikit-learn y TensorFlow.",
+                "name": "BIM con Revit y Navisworks",
+                "description": "Aprende a modelar proyectos de ingeniería civil en 3D con Autodesk Revit y coordinar disciplinas con Navisworks. Incluye detección de interferencias y generación de planos.",
                 "workshop_type": "workshop",
-                "speaker": speakers[0],
+                "speaker": speakers[1],
                 "start_time": base_date,
                 "end_time": base_date + timedelta(hours=3),
-                "location": "Laboratorio A-101",
+                "location": "Laboratorio de Cómputo A-101",
                 "capacity": 40,
             },
             {
-                "name": "Desarrollo de APIs con FastAPI",
-                "description": "Crea APIs RESTful modernas y de alto rendimiento con FastAPI.",
+                "name": "Diseño Sísmico con ETABS",
+                "description": "Modelamiento y análisis sísmico de edificaciones de concreto armado utilizando ETABS. Incluye análisis estático, dinámico modal espectral y verificación según la norma E.030.",
                 "workshop_type": "workshop",
-                "speaker": speakers[1],
+                "speaker": speakers[2],
                 "start_time": base_date + timedelta(hours=4),
                 "end_time": base_date + timedelta(hours=7),
-                "location": "Laboratorio A-102",
+                "location": "Laboratorio de Cómputo A-102",
                 "capacity": 35,
             },
             {
-                "name": "Conferencia: IA Generativa",
-                "description": "El futuro de la computación y cómo la IA generativa está transformando la industria.",
+                "name": "Conferencia: Ingeniería Geotécnica Sísmica",
+                "description": "Avances y desafíos de la ingeniería geotécnica sísmica en el Perú. Casos de estudio y metodologías modernas.",
                 "workshop_type": "talk",
                 "speaker": speakers[0],
                 "start_time": base_date + timedelta(hours=8),
                 "end_time": base_date + timedelta(hours=9, minutes=30),
-                "location": "Auditorio Principal",
+                "location": "Auditorio Principal UNCP",
                 "capacity": 500,
             },
             # Day 2
             {
-                "name": "Taller de Ciberseguridad Ofensiva",
-                "description": "Aprende técnicas de pentesting ético y análisis de vulnerabilidades.",
+                "name": "Modelamiento Geotécnico con PLAXIS",
+                "description": "Análisis geotécnico por elementos finitos con PLAXIS 2D. Incluye modelamiento de excavaciones, taludes, cimentaciones y muros de contención.",
                 "workshop_type": "workshop",
-                "speaker": speakers[2],
+                "speaker": speakers[0],
                 "start_time": base_date + timedelta(days=1),
                 "end_time": base_date + timedelta(days=1, hours=3),
-                "location": "Laboratorio B-201",
+                "location": "Laboratorio de Cómputo B-201",
                 "capacity": 30,
             },
             {
-                "name": "Cloud Native con Kubernetes",
-                "description": "Despliega aplicaciones containerizadas con Docker y Kubernetes.",
+                "name": "AutoCAD Civil 3D Avanzado",
+                "description": "Diseño geométrico de carreteras, movimiento de tierras y redes de agua y alcantarillado con AutoCAD Civil 3D. Generación de perfiles y secciones transversales.",
                 "workshop_type": "workshop",
                 "speaker": speakers[7],
                 "start_time": base_date + timedelta(days=1, hours=4),
                 "end_time": base_date + timedelta(days=1, hours=7),
-                "location": "Laboratorio B-202",
+                "location": "Laboratorio de Cómputo B-202",
                 "capacity": 35,
             },
             {
-                "name": "Conferencia: Blockchain Beyond Crypto",
-                "description": "Aplicaciones de blockchain más allá de las criptomonedas.",
+                "name": "Conferencia: Diseño Sísmico Basado en Desempeño",
+                "description": "Nuevas tendencias en diseño sísmico basado en desempeño y su aplicación en edificaciones peruanas.",
                 "workshop_type": "talk",
-                "speaker": speakers[8],
+                "speaker": speakers[2],
                 "start_time": base_date + timedelta(days=1, hours=8),
                 "end_time": base_date + timedelta(days=1, hours=9, minutes=30),
-                "location": "Auditorio Principal",
+                "location": "Auditorio Principal UNCP",
                 "capacity": 500,
             },
             # Day 3
             {
-                "name": "Visita Técnica: Data Center de Google",
-                "description": "Visita guiada al data center de Google en Lima.",
+                "name": "Costos y Presupuestos con S10",
+                "description": "Elaboración de presupuestos de obra, análisis de costos unitarios, fórmulas polinómicas y programación de obra con S10 Costos y Presupuestos.",
+                "workshop_type": "workshop",
+                "speaker": speakers[9],
+                "start_time": base_date + timedelta(days=2),
+                "end_time": base_date + timedelta(days=2, hours=3),
+                "location": "Laboratorio de Cómputo C-301",
+                "capacity": 40,
+            },
+            {
+                "name": "Gestión de Proyectos con MS Project",
+                "description": "Planificación y control de proyectos de construcción con Microsoft Project. Diagramas Gantt, ruta crítica, asignación de recursos y seguimiento de obra.",
+                "workshop_type": "workshop",
+                "speaker": speakers[9],
+                "start_time": base_date + timedelta(days=2, hours=4),
+                "end_time": base_date + timedelta(days=2, hours=6),
+                "location": "Laboratorio de Cómputo C-302",
+                "capacity": 40,
+            },
+            # Day 4
+            {
+                "name": "Diseño de Puentes con CSiBridge",
+                "description": "Modelamiento y diseño de puentes vehiculares con CSiBridge. Análisis por carga móvil, diseño de superestructura y subestructura según norma AASHTO LRFD.",
+                "workshop_type": "workshop",
+                "speaker": speakers[6],
+                "start_time": base_date + timedelta(days=3),
+                "end_time": base_date + timedelta(days=3, hours=3),
+                "location": "Laboratorio de Cómputo A-101",
+                "capacity": 35,
+            },
+            {
+                "name": "Topografía con Drones y Estación Total",
+                "description": "Levantamiento topográfico con estación total y drones. Procesamiento fotogramétrico, generación de nube de puntos, MDT y ortofotos con Agisoft Metashape.",
+                "workshop_type": "workshop",
+                "speaker": speakers[7],
+                "start_time": base_date + timedelta(days=3, hours=4),
+                "end_time": base_date + timedelta(days=3, hours=7),
+                "location": "Campo Deportivo UNCP (práctica de campo)",
+                "capacity": 30,
+            },
+            # Day 5 - Technical visits and closing
+            {
+                "name": "Visita Técnica: Obra de Construcción Vial",
+                "description": "Visita guiada a la obra de mejoramiento de la carretera central en el tramo Huancayo - La Oroya.",
                 "workshop_type": "technical_visit",
                 "speaker": None,
-                "start_time": base_date + timedelta(days=2),
-                "end_time": base_date + timedelta(days=2, hours=4),
-                "location": "Google Lima (transporte incluido)",
+                "start_time": base_date + timedelta(days=4),
+                "end_time": base_date + timedelta(days=4, hours=4),
+                "location": "Carretera Central (transporte incluido)",
                 "capacity": 25,
             },
             {
-                "name": "Taller de Emprendimiento Tech",
-                "description": "Cómo crear tu startup tecnológica desde la universidad.",
-                "workshop_type": "workshop",
+                "name": "Conferencia: Gestión de Megaproyectos",
+                "description": "Lecciones aprendidas en la gestión de megaproyectos de infraestructura en el Perú.",
+                "workshop_type": "talk",
                 "speaker": speakers[9],
-                "start_time": base_date + timedelta(days=2, hours=5),
-                "end_time": base_date + timedelta(days=2, hours=7),
-                "location": "Sala de Conferencias C-301",
-                "capacity": 50,
+                "start_time": base_date + timedelta(days=4, hours=5),
+                "end_time": base_date + timedelta(days=4, hours=6, minutes=30),
+                "location": "Auditorio Principal UNCP",
+                "capacity": 500,
             },
         ]
 
@@ -394,20 +508,20 @@ class Command(BaseCommand):
 
         ScheduleDay.objects.all().delete()
 
-        # Day 1
+        # Day 1 - August 15
         day1 = ScheduleDay.objects.create(
-            date=date(2027, 8, 18),
+            date=date(2027, 8, 15),
             title="Día 1 - Inauguración y Talleres",
-            description="Ceremonia de apertura, conferencias magistrales y primeros talleres.",
+            description="Ceremonia de apertura, conferencias magistrales y primeros talleres de BIM y diseño sísmico.",
         )
         items_day1 = [
-            ("Registro y Acreditación", "Registro de participantes y entrega de kits.", time(7, 30), time(8, 30), "Hall Principal", "ceremony", None, None, False),
-            ("Ceremonia de Inauguración", "Palabras de bienvenida del comité organizador y autoridades.", time(8, 30), time(9, 30), "Auditorio Principal", "ceremony", None, None, True),
-            ("Taller de Machine Learning con Python", "Taller práctico de ML.", time(10, 0), time(13, 0), "Laboratorio A-101", "workshop", workshops[0] if workshops else None, speakers[0] if speakers else None, False),
-            ("Almuerzo", "Almuerzo para participantes VIP y Premium.", time(13, 0), time(14, 0), "Comedor", "break", None, None, False),
-            ("Desarrollo de APIs con FastAPI", "Taller práctico de FastAPI.", time(14, 0), time(17, 0), "Laboratorio A-102", "workshop", workshops[1] if len(workshops) > 1 else None, speakers[1] if len(speakers) > 1 else None, False),
-            ("Conferencia: IA Generativa", "Conferencia magistral sobre IA.", time(17, 30), time(19, 0), "Auditorio Principal", "conference", workshops[2] if len(workshops) > 2 else None, speakers[0] if speakers else None, True),
-            ("Networking Night", "Evento social de networking.", time(19, 30), time(21, 0), "Terraza", "social", None, None, False),
+            ("Registro y Acreditación", "Registro de participantes y entrega de kits.", time(7, 30), time(8, 30), "Hall Principal UNCP", "ceremony", None, None, False),
+            ("Ceremonia de Inauguración", "Palabras de bienvenida del comité organizador, ANEIC y autoridades de la UNCP.", time(8, 30), time(9, 30), "Auditorio Principal UNCP", "ceremony", None, None, True),
+            ("BIM con Revit y Navisworks", "Taller práctico de modelamiento BIM.", time(10, 0), time(13, 0), "Laboratorio de Cómputo A-101", "workshop", workshops[0] if workshops else None, speakers[1] if len(speakers) > 1 else None, False),
+            ("Almuerzo", "Almuerzo para participantes VIP y Premium.", time(13, 0), time(14, 0), "Comedor Universitario UNCP", "break", None, None, False),
+            ("Diseño Sísmico con ETABS", "Taller práctico de análisis sísmico.", time(14, 0), time(17, 0), "Laboratorio de Cómputo A-102", "workshop", workshops[1] if len(workshops) > 1 else None, speakers[2] if len(speakers) > 2 else None, False),
+            ("Conferencia: Ingeniería Geotécnica Sísmica", "Conferencia magistral sobre geotecnia sísmica.", time(17, 30), time(19, 0), "Auditorio Principal UNCP", "conference", workshops[2] if len(workshops) > 2 else None, speakers[0] if speakers else None, True),
+            ("Noche de Bienvenida", "Evento social de bienvenida y networking entre delegaciones.", time(19, 30), time(21, 0), "Explanada UNCP", "social", None, None, False),
         ]
 
         for title, desc, start, end, loc, itype, ws, sp, feat in items_day1:
@@ -417,19 +531,19 @@ class Command(BaseCommand):
                 item_type=itype, workshop=ws, speaker=sp, is_featured=feat,
             )
 
-        # Day 2
+        # Day 2 - August 16
         day2 = ScheduleDay.objects.create(
-            date=date(2027, 8, 19),
-            title="Día 2 - Conferencias y Talleres",
-            description="Conferencias técnicas, talleres avanzados y actividades de networking.",
+            date=date(2027, 8, 16),
+            title="Día 2 - Geotecnia y Diseño Vial",
+            description="Talleres de PLAXIS y Civil 3D, conferencias sobre diseño sísmico basado en desempeño.",
         )
         items_day2 = [
-            ("Conferencia: Big Data y Sistemas de Recomendación", "Ponencia magistral.", time(8, 30), time(10, 0), "Auditorio Principal", "conference", None, speakers[4] if len(speakers) > 4 else None, True),
-            ("Taller de Ciberseguridad Ofensiva", "Taller práctico de pentesting.", time(10, 0), time(13, 0), "Laboratorio B-201", "workshop", workshops[3] if len(workshops) > 3 else None, speakers[2] if len(speakers) > 2 else None, False),
-            ("Almuerzo", "Almuerzo para todos los participantes.", time(13, 0), time(14, 0), "Comedor", "break", None, None, False),
-            ("Cloud Native con Kubernetes", "Taller de contenedores y orquestación.", time(14, 0), time(17, 0), "Laboratorio B-202", "workshop", workshops[4] if len(workshops) > 4 else None, speakers[7] if len(speakers) > 7 else None, False),
-            ("Conferencia: Blockchain Beyond Crypto", "Conferencia sobre blockchain.", time(17, 30), time(19, 0), "Auditorio Principal", "conference", workshops[5] if len(workshops) > 5 else None, speakers[8] if len(speakers) > 8 else None, True),
-            ("Cena de Gala", "Cena exclusiva para participantes Premium.", time(20, 0), time(22, 0), "Salón de Gala", "social", None, None, False),
+            ("Conferencia: Construcción Sostenible y LEED", "Ponencia magistral sobre sostenibilidad.", time(8, 30), time(10, 0), "Auditorio Principal UNCP", "conference", None, speakers[3] if len(speakers) > 3 else None, True),
+            ("Modelamiento Geotécnico con PLAXIS", "Taller práctico de análisis geotécnico.", time(10, 0), time(13, 0), "Laboratorio de Cómputo B-201", "workshop", workshops[3] if len(workshops) > 3 else None, speakers[0] if speakers else None, False),
+            ("Almuerzo", "Almuerzo para todos los participantes.", time(13, 0), time(14, 0), "Comedor Universitario UNCP", "break", None, None, False),
+            ("AutoCAD Civil 3D Avanzado", "Taller de diseño vial y movimiento de tierras.", time(14, 0), time(17, 0), "Laboratorio de Cómputo B-202", "workshop", workshops[4] if len(workshops) > 4 else None, speakers[7] if len(speakers) > 7 else None, False),
+            ("Conferencia: Diseño Sísmico Basado en Desempeño", "Nuevas tendencias en diseño sísmico.", time(17, 30), time(19, 0), "Auditorio Principal UNCP", "conference", workshops[5] if len(workshops) > 5 else None, speakers[2] if len(speakers) > 2 else None, True),
+            ("Cena de Gala", "Cena exclusiva para participantes Premium.", time(20, 0), time(22, 0), "Hotel Presidente - Huancayo", "social", None, None, False),
         ]
 
         for title, desc, start, end, loc, itype, ws, sp, feat in items_day2:
@@ -439,18 +553,18 @@ class Command(BaseCommand):
                 item_type=itype, workshop=ws, speaker=sp, is_featured=feat,
             )
 
-        # Day 3
+        # Day 3 - August 17
         day3 = ScheduleDay.objects.create(
-            date=date(2027, 8, 20),
-            title="Día 3 - Visitas Técnicas y Clausura",
-            description="Visitas técnicas a empresas, últimos talleres y ceremonia de clausura.",
+            date=date(2027, 8, 17),
+            title="Día 3 - Costos, Presupuestos y Gestión",
+            description="Talleres de S10 y MS Project, conferencias sobre recursos hídricos y materiales innovadores.",
         )
         items_day3 = [
-            ("Visita Técnica: Data Center de Google", "Visita guiada.", time(8, 0), time(12, 0), "Google Lima", "workshop", workshops[6] if len(workshops) > 6 else None, None, True),
-            ("Almuerzo", "Último almuerzo del evento.", time(12, 0), time(13, 0), "Comedor", "break", None, None, False),
-            ("Taller de Emprendimiento Tech", "Cómo crear tu startup.", time(13, 0), time(15, 0), "Sala C-301", "workshop", workshops[7] if len(workshops) > 7 else None, speakers[9] if len(speakers) > 9 else None, False),
-            ("Conferencia: Emprendimiento Tech desde la Universidad", "Conferencia de cierre.", time(15, 30), time(17, 0), "Auditorio Principal", "conference", None, speakers[9] if len(speakers) > 9 else None, True),
-            ("Ceremonia de Clausura", "Entrega de certificados y cierre del CONEIC 2027.", time(17, 30), time(19, 0), "Auditorio Principal", "ceremony", None, None, True),
+            ("Conferencia: Concreto de Ultra Alto Rendimiento", "Ponencia sobre materiales innovadores.", time(8, 30), time(10, 0), "Auditorio Principal UNCP", "conference", None, speakers[4] if len(speakers) > 4 else None, True),
+            ("Costos y Presupuestos con S10", "Taller práctico de presupuestos de obra.", time(10, 0), time(13, 0), "Laboratorio de Cómputo C-301", "workshop", workshops[6] if len(workshops) > 6 else None, speakers[9] if len(speakers) > 9 else None, False),
+            ("Almuerzo", "Almuerzo para participantes.", time(13, 0), time(14, 0), "Comedor Universitario UNCP", "break", None, None, False),
+            ("Gestión de Proyectos con MS Project", "Taller de planificación de obras.", time(14, 0), time(16, 0), "Laboratorio de Cómputo C-302", "workshop", workshops[7] if len(workshops) > 7 else None, speakers[9] if len(speakers) > 9 else None, False),
+            ("Conferencia: Gestión de Recursos Hídricos", "Conferencia sobre ingeniería hidráulica y cambio climático.", time(16, 30), time(18, 0), "Auditorio Principal UNCP", "conference", None, speakers[5] if len(speakers) > 5 else None, True),
         ]
 
         for title, desc, start, end, loc, itype, ws, sp, feat in items_day3:
@@ -460,7 +574,69 @@ class Command(BaseCommand):
                 item_type=itype, workshop=ws, speaker=sp, is_featured=feat,
             )
 
-        self.stdout.write("  Created 3-day schedule")
+        # Day 4 - August 18
+        day4 = ScheduleDay.objects.create(
+            date=date(2027, 8, 18),
+            title="Día 4 - Puentes, Topografía y Concursos",
+            description="Talleres de CSiBridge y topografía con drones, concursos estudiantiles.",
+        )
+        items_day4 = [
+            ("Conferencia: Diseño de Puentes Modernos en los Andes", "Ponencia sobre ingeniería de puentes.", time(8, 30), time(10, 0), "Auditorio Principal UNCP", "conference", None, speakers[6] if len(speakers) > 6 else None, True),
+            ("Diseño de Puentes con CSiBridge", "Taller práctico de diseño de puentes.", time(10, 0), time(13, 0), "Laboratorio de Cómputo A-101", "workshop", workshops[8] if len(workshops) > 8 else None, speakers[6] if len(speakers) > 6 else None, False),
+            ("Almuerzo", "Almuerzo para participantes.", time(13, 0), time(14, 0), "Comedor Universitario UNCP", "break", None, None, False),
+            ("Topografía con Drones y Estación Total", "Práctica de campo con equipos topográficos.", time(14, 0), time(17, 0), "Campo Deportivo UNCP", "workshop", workshops[9] if len(workshops) > 9 else None, speakers[7] if len(speakers) > 7 else None, False),
+            ("Concurso de Ponencias Estudiantiles", "Concurso de investigación entre delegaciones.", time(17, 30), time(19, 0), "Auditorio Principal UNCP", "conference", None, None, True),
+        ]
+
+        for title, desc, start, end, loc, itype, ws, sp, feat in items_day4:
+            ScheduleItem.objects.create(
+                day=day4, title=title, description=desc,
+                start_time=start, end_time=end, location=loc,
+                item_type=itype, workshop=ws, speaker=sp, is_featured=feat,
+            )
+
+        # Day 5 - August 19
+        day5 = ScheduleDay.objects.create(
+            date=date(2027, 8, 19),
+            title="Día 5 - Visitas Técnicas y Conferencias",
+            description="Visita técnica a obra vial, conferencias de cierre sobre infraestructura vial y gestión de megaproyectos.",
+        )
+        items_day5 = [
+            ("Visita Técnica: Obra de Construcción Vial", "Visita a obra de mejoramiento vial.", time(8, 0), time(12, 0), "Carretera Central (transporte incluido)", "workshop", workshops[10] if len(workshops) > 10 else None, None, True),
+            ("Almuerzo", "Almuerzo de confraternidad.", time(12, 0), time(13, 0), "Comedor Universitario UNCP", "break", None, None, False),
+            ("Conferencia: Infraestructura Vial Sostenible", "Conferencia sobre planificación vial.", time(13, 30), time(15, 0), "Auditorio Principal UNCP", "conference", None, speakers[8] if len(speakers) > 8 else None, True),
+            ("Conferencia: Gestión de Megaproyectos", "Lecciones aprendidas en megaproyectos.", time(15, 30), time(17, 0), "Auditorio Principal UNCP", "conference", workshops[11] if len(workshops) > 11 else None, speakers[9] if len(speakers) > 9 else None, True),
+        ]
+
+        for title, desc, start, end, loc, itype, ws, sp, feat in items_day5:
+            ScheduleItem.objects.create(
+                day=day5, title=title, description=desc,
+                start_time=start, end_time=end, location=loc,
+                item_type=itype, workshop=ws, speaker=sp, is_featured=feat,
+            )
+
+        # Day 6 - August 20
+        day6 = ScheduleDay.objects.create(
+            date=date(2027, 8, 20),
+            title="Día 6 - Clausura",
+            description="Premiaciones, entrega de certificados y ceremonia de clausura del XXXIV CONEIC.",
+        )
+        items_day6 = [
+            ("Feria de Proyectos Estudiantiles", "Exposición de proyectos de investigación de las delegaciones.", time(9, 0), time(12, 0), "Explanada UNCP", "social", None, None, False),
+            ("Almuerzo de Despedida", "Último almuerzo del evento.", time(12, 0), time(13, 0), "Comedor Universitario UNCP", "break", None, None, False),
+            ("Premiación de Concursos", "Entrega de premios a ganadores de concursos y ponencias.", time(14, 0), time(15, 30), "Auditorio Principal UNCP", "ceremony", None, None, True),
+            ("Ceremonia de Clausura", "Entrega de certificados, traspaso de sede y cierre del XXXIV CONEIC Huancayo 2027.", time(16, 0), time(18, 0), "Auditorio Principal UNCP", "ceremony", None, None, True),
+            ("Fiesta de Despedida", "Celebración de cierre del congreso.", time(20, 0), time(23, 0), "Local de eventos - Huancayo", "social", None, None, False),
+        ]
+
+        for title, desc, start, end, loc, itype, ws, sp, feat in items_day6:
+            ScheduleItem.objects.create(
+                day=day6, title=title, description=desc,
+                start_time=start, end_time=end, location=loc,
+                item_type=itype, workshop=ws, speaker=sp, is_featured=feat,
+            )
+
+        self.stdout.write("  Created 6-day schedule")
 
     def _create_organizer_user(self):
         from apps.participants.models import Participant, ParticipantType
@@ -471,10 +647,10 @@ class Command(BaseCommand):
             defaults={
                 "full_name": "Administrador CONEIC",
                 "phone": "+51999999999",
-                "university": "Universidad Nacional de Ingeniería",
-                "career": "Ingeniería de Computación",
+                "university": "Universidad Nacional del Centro del Perú",
+                "career": "Ingeniería Civil",
                 "country": "Perú",
-                "city": "Lima",
+                "city": "Huancayo",
                 "is_verified": True,
                 "is_staff": True,
                 "is_superuser": True,

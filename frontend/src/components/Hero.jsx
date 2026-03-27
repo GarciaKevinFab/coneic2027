@@ -214,10 +214,19 @@ export default function Hero() {
           {/* Subtitle */}
           <motion.p
             variants={fadeSlideUp}
-            className="text-xl sm:text-2xl font-display font-semibold mb-4"
+            className="text-xl sm:text-2xl font-display font-semibold mb-2"
             style={{ color: '#8badd4' }}
           >
-            Congreso Nacional de Estudiantes de Ingenieria Civil
+            XXXIV Congreso Nacional de Estudiantes de Ingenieria Civil
+          </motion.p>
+
+          {/* Lema */}
+          <motion.p
+            variants={fadeSlideUp}
+            className="text-base sm:text-lg font-display italic mb-4"
+            style={{ color: '#F4A524' }}
+          >
+            &ldquo;Somos ingenieria, somos civil, somos transformacion&rdquo;
           </motion.p>
 
           {/* Description */}
@@ -238,7 +247,7 @@ export default function Hero() {
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               <HiCalendar className="w-5 h-5" style={{ color: '#F4A524' }} />
-              <span className="text-white text-sm font-medium">15 - 20 de Agosto, 2027</span>
+              <span className="text-white text-sm font-medium">15 - 20 Agosto 2027</span>
             </motion.div>
             <motion.div
               className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5"
@@ -246,7 +255,7 @@ export default function Hero() {
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               <HiLocationMarker className="w-5 h-5" style={{ color: '#F4A524' }} />
-              <span className="text-white text-sm font-medium">Lima, Peru</span>
+              <span className="text-white text-sm font-medium">Huancayo, Junin - Peru</span>
             </motion.div>
           </motion.div>
 

@@ -60,7 +60,7 @@ export default function Footer() {
               </a>
               <div className="flex items-start gap-2 text-primary-200 text-sm">
                 <HiLocationMarker className="w-4 h-4 shrink-0 mt-0.5" />
-                Universidad Nacional de Ingenieria, Lima, Peru
+                Universidad Nacional del Centro del Peru (UNCP) - Huancayo, Junin
               </div>
             </div>
           </div>

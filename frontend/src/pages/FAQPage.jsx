@@ -6,7 +6,7 @@ const faqs = [
   {
     question: 'Cuando y donde se realizara CONEIC 2027?',
     answer:
-      'CONEIC 2027 se realizara del 15 al 20 de agosto de 2027 en la ciudad de Lima, Peru. La sede principal sera la Universidad Nacional de Ingenieria (UNI).',
+      'CONEIC 2027 se realizara del 15 al 20 de agosto de 2027 en la ciudad de Huancayo, Junin - Peru. La sede principal sera la Universidad Nacional del Centro del Peru (UNCP).',
   },
   {
     question: 'Quien puede participar en CONEIC 2027?',
