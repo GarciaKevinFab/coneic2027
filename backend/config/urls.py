@@ -43,8 +43,6 @@ urlpatterns = [
     ),
     # API v1 - Admin / Core
     path("api/v1/admin/", include("apps.core.urls", namespace="core")),
-    # JWT token endpoints
-    path("api/v1/token/", include("rest_framework_simplejwt.urls")),
 ]
 
 # Serve media files in development

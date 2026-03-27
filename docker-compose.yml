@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:15
@@ -56,13 +54,15 @@ services:
       - redis
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: base
     command: npm run dev -- --host 0.0.0.0
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - "5173:3000"
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
       - VITE_CULQI_PUBLIC_KEY=${VITE_CULQI_PUBLIC_KEY:-}
