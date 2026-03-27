@@ -5,17 +5,17 @@ export default function SpeakerCard({ speaker }) {
 
   return (
     <div className="card group">
-      <div className="aspect-[4/5] bg-gradient-to-br from-primary-100 to-primary-200 relative overflow-hidden">
-        {speaker.photo_url ? (
+      <div className="aspect-[4/5] bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
+        {(speaker.photo_url || speaker.photo) ? (
           <img
-            src={speaker.photo_url}
+            src={speaker.photo_url || speaker.photo}
             alt={speaker.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <div className="w-24 h-24 rounded-full bg-primary-300/50 flex items-center justify-center">
-              <span className="text-4xl font-display font-bold text-primary-600">
+            <div className="w-24 h-24 rounded-full bg-[#1A3A6B]/10 flex items-center justify-center">
+              <span className="text-4xl font-display font-bold text-[#1A3A6B]">
                 {speaker.name?.[0]?.toUpperCase() || 'P'}
               </span>
             </div>

@@ -3,7 +3,7 @@ import api from './api';
 const workshopService = {
   getAll: async () => {
     const { data } = await api.get('/workshops/');
-    return data;
+    return data.results || data;
   },
 
   getById: async (workshopId) => {

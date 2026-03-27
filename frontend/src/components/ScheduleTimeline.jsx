@@ -12,7 +12,8 @@ const typeConfig = {
 };
 
 function TimelineItem({ item, isLast }) {
-  const config = typeConfig[item.type] || { label: item.type || 'Actividad', color: 'bg-gray-400', dot: 'border-gray-400' };
+  const itemType = item.item_type || item.type;
+  const config = typeConfig[itemType] || { label: itemType || 'Actividad', color: 'bg-gray-400', dot: 'border-gray-400' };
 
   return (
     <div className="flex gap-4 sm:gap-6">
@@ -36,10 +37,10 @@ function TimelineItem({ item, isLast }) {
             <p className="text-sm text-gray-600 mt-1.5 line-clamp-2">{item.description}</p>
           )}
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-            {item.speaker && (
+            {(item.speaker || item.speaker_name) && (
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
                 <HiUser className="w-3.5 h-3.5" />
-                <span>{item.speaker}</span>
+                <span>{typeof item.speaker === 'object' ? item.speaker.name : (item.speaker_name || item.speaker)}</span>
               </div>
             )}
             {item.location && (
@@ -55,8 +56,9 @@ function TimelineItem({ item, isLast }) {
   );
 }
 
-export default function ScheduleTimeline({ items = [], emptyMessage = 'No hay actividades programadas.' }) {
-  if (!items.length) {
+export default function ScheduleTimeline({ items, events, emptyMessage = 'No hay actividades programadas.' }) {
+  const data = items || events || [];
+  if (!data.length) {
     return (
       <div className="text-center py-12">
         <HiAcademicCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -67,8 +69,8 @@ export default function ScheduleTimeline({ items = [], emptyMessage = 'No hay ac
 
   return (
     <div className="space-y-0">
-      {items.map((item, index) => (
-        <TimelineItem key={item.id || index} item={item} isLast={index === items.length - 1} />
+      {data.map((item, index) => (
+        <TimelineItem key={item.id || index} item={item} isLast={index === data.length - 1} />
       ))}
     </div>
   );

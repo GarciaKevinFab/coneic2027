@@ -16,12 +16,18 @@ const typeFilters = [
   { value: 'competition', label: 'Concursos' },
 ];
 
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' });
+}
+
 export default function SchedulePage() {
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [typeFilter, setTypeFilter] = useState('all');
 
   const {
-    data: schedule = [],
+    data: scheduleDays = [],
     isLoading,
     isError,
   } = useQuery({
@@ -30,45 +36,25 @@ export default function SchedulePage() {
     placeholderData: [],
   });
 
-  // Extract unique days from schedule data
+  // Build day tabs from backend data
   const days = useMemo(() => {
-    const dayMap = new Map();
-    schedule.forEach((item) => {
-      const dayKey = item.day || item.day_number;
-      if (dayKey && !dayMap.has(dayKey)) {
-        dayMap.set(dayKey, {
-          id: dayKey,
-          label: `Dia ${dayKey}`,
-          date: item.date || `${14 + dayKey} Ago`,
-        });
-      }
-    });
-    const sorted = Array.from(dayMap.values()).sort((a, b) => a.id - b.id);
-    return sorted.length > 0
-      ? sorted
-      : [
-          { id: 1, label: 'Dia 1', date: '15 Ago' },
-          { id: 2, label: 'Dia 2', date: '16 Ago' },
-          { id: 3, label: 'Dia 3', date: '17 Ago' },
-          { id: 4, label: 'Dia 4', date: '18 Ago' },
-          { id: 5, label: 'Dia 5', date: '19 Ago' },
-          { id: 6, label: 'Dia 6', date: '20 Ago' },
-        ];
-  }, [schedule]);
+    return scheduleDays.map((day, idx) => ({
+      idx,
+      id: day.id,
+      label: day.title || `Dia ${idx + 1}`,
+      date: formatDate(day.date),
+    }));
+  }, [scheduleDays]);
 
-  // Set initial selected day once data loads
-  const activeDay = selectedDay || days[0]?.id || 1;
+  const activeIdx = selectedDayIdx < days.length ? selectedDayIdx : 0;
+  const currentDay = scheduleDays[activeIdx];
 
-  // Filter events by selected day and type
+  // Filter events by type
   const filteredEvents = useMemo(() => {
-    let events = schedule.filter(
-      (item) => (item.day || item.day_number) === activeDay
-    );
-    if (typeFilter !== 'all') {
-      events = events.filter((e) => e.type === typeFilter);
-    }
-    return events;
-  }, [schedule, activeDay, typeFilter]);
+    const items = currentDay?.items || [];
+    if (typeFilter === 'all') return items;
+    return items.filter((e) => e.item_type === typeFilter);
+  }, [currentDay, typeFilter]);
 
   return (
     <div>
@@ -104,23 +90,25 @@ export default function SchedulePage() {
               <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
                 {days.map((day) => (
                   <button
-                    key={day.id}
-                    onClick={() => setSelectedDay(day.id)}
+                    key={day.idx}
+                    onClick={() => setSelectedDayIdx(day.idx)}
                     className={clsx(
                       'flex flex-col items-center px-5 py-3 rounded-xl border-2 transition-all shrink-0 min-w-[90px]',
-                      activeDay === day.id
+                      activeIdx === day.idx
                         ? 'border-[#1A3A6B] bg-[#1A3A6B] text-white'
                         : 'border-gray-200 bg-white text-gray-600 hover:border-[#1A3A6B]/30'
                     )}
                   >
                     <HiCalendar className={clsx(
                       'w-4 h-4 mb-1',
-                      activeDay === day.id ? 'text-[#F4A524]' : 'text-gray-400'
+                      activeIdx === day.idx ? 'text-[#F4A524]' : 'text-gray-400'
                     )} />
-                    <span className="font-display font-bold text-sm">{day.label}</span>
+                    <span className="font-display font-bold text-sm whitespace-nowrap">
+                      {day.label.length > 15 ? `Dia ${day.idx + 1}` : day.label}
+                    </span>
                     <span className={clsx(
                       'text-xs mt-0.5',
-                      activeDay === day.id ? 'text-blue-200' : 'text-gray-400'
+                      activeIdx === day.idx ? 'text-blue-200' : 'text-gray-400'
                     )}>
                       {day.date}
                     </span>
@@ -153,14 +141,14 @@ export default function SchedulePage() {
               </div>
 
               {/* Timeline */}
-              <ScheduleTimeline
-                items={filteredEvents}
-                emptyMessage={
-                  typeFilter !== 'all'
-                    ? `No hay actividades de tipo "${typeFilters.find(f => f.value === typeFilter)?.label}" para este dia.`
-                    : 'No hay actividades programadas para este dia.'
-                }
-              />
+              {filteredEvents.length > 0 ? (
+                <ScheduleTimeline events={filteredEvents} />
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <HiCalendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No hay eventos para este dia con el filtro seleccionado.</p>
+                </div>
+              )}
             </>
           )}
         </div>

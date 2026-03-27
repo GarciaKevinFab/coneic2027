@@ -12,9 +12,9 @@ const tierOrder = ['platinum', 'gold', 'silver', 'bronze'];
 function SponsorItem({ sponsor, sizeClass }) {
   const content = (
     <div className="flex items-center justify-center p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 w-full">
-      {sponsor.logo_url ? (
+      {(sponsor.logo_url || sponsor.logo) ? (
         <img
-          src={sponsor.logo_url}
+          src={sponsor.logo_url || sponsor.logo}
           alt={sponsor.name}
           className={clsx('object-contain w-auto max-w-full', sizeClass)}
         />
@@ -34,24 +34,26 @@ function SponsorItem({ sponsor, sizeClass }) {
   return content;
 }
 
-export default function SponsorGrid({ sponsors = [] }) {
-  const grouped = tierOrder.reduce((acc, tier) => {
-    const items = sponsors.filter((s) => s.tier?.toLowerCase() === tier);
-    if (items.length > 0) acc.push({ tier, items });
-    return acc;
-  }, []);
-
-  if (grouped.length === 0 && sponsors.length > 0) {
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        {sponsors.map((sponsor, i) => (
-          <SponsorItem key={sponsor.id || i} sponsor={sponsor} sizeClass="h-14 sm:h-18" />
-        ))}
-      </div>
-    );
+export default function SponsorGrid({ sponsors = {} }) {
+  // Handle both grouped object { platinum: [...] } and flat array formats
+  let grouped;
+  if (Array.isArray(sponsors)) {
+    grouped = tierOrder.reduce((acc, tier) => {
+      const items = sponsors.filter((s) => s.tier?.toLowerCase() === tier);
+      if (items.length > 0) acc.push({ tier, items });
+      return acc;
+    }, []);
+  } else {
+    grouped = tierOrder.reduce((acc, tier) => {
+      const items = sponsors[tier] || [];
+      if (items.length > 0) acc.push({ tier, items });
+      return acc;
+    }, []);
   }
 
-  if (sponsors.length === 0) {
+  const totalSponsors = grouped.reduce((sum, g) => sum + g.items.length, 0);
+
+  if (totalSponsors === 0) {
     return <p className="text-center text-gray-500 py-8">Sponsors por anunciar.</p>;
   }
 

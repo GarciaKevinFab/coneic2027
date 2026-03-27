@@ -23,7 +23,7 @@ export default function WorkshopsPage() {
   const types = useMemo(() => {
     const set = new Set();
     workshops.forEach((w) => {
-      if (w.type) set.add(w.type);
+      if (w.workshop_type || w.type) set.add(w.workshop_type || w.type);
     });
     return Array.from(set);
   }, [workshops]);
@@ -31,7 +31,7 @@ export default function WorkshopsPage() {
   const filteredWorkshops = useMemo(() => {
     let result = workshops;
     if (typeFilter !== 'all') {
-      result = result.filter((w) => w.type === typeFilter);
+      result = result.filter((w) => (w.workshop_type || w.type) === typeFilter);
     }
     if (search.trim()) {
       const term = search.toLowerCase();

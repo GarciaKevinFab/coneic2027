@@ -45,17 +45,20 @@ const stats = [
 ];
 
 export default function HomePage() {
-  const { data: sponsors = [] } = useQuery({
+  const { data: sponsors = {} } = useQuery({
     queryKey: ['sponsors'],
     queryFn: institutionalService.getSponsors,
+    placeholderData: {},
+  });
+
+  const { data: scheduleData = [] } = useQuery({
+    queryKey: ['schedule-preview'],
+    queryFn: scheduleService.getSchedule,
     placeholderData: [],
   });
 
-  const { data: schedule = [] } = useQuery({
-    queryKey: ['schedule-preview'],
-    queryFn: () => scheduleService.getByDay(1),
-    placeholderData: [],
-  });
+  // Take first day's items for preview
+  const schedule = scheduleData?.[0]?.items?.slice(0, 4) || [];
 
   return (
     <div>

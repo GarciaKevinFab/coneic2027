@@ -4,10 +4,12 @@ import clsx from 'clsx';
 export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled = false, loading = false }) {
   if (!workshop) return null;
 
-  const capacityPercent = workshop.max_capacity
-    ? Math.round((workshop.enrolled_count / workshop.max_capacity) * 100)
-    : 0;
-  const isFull = workshop.enrolled_count >= workshop.max_capacity;
+  const capacity = workshop.capacity || workshop.max_capacity || 0;
+  const enrolledCount = workshop.enrolled_count || 0;
+  const capacityPercent = capacity ? Math.round((enrolledCount / capacity) * 100) : 0;
+  const isFull = capacity > 0 && enrolledCount >= capacity;
+  const speakerName = typeof workshop.speaker === 'object' ? workshop.speaker?.name : (workshop.speaker_name || workshop.speaker);
+  const workshopType = workshop.workshop_type_display || workshop.workshop_type || workshop.type;
 
   return (
     <div className="card flex flex-col">
@@ -16,8 +18,8 @@ export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled 
           <h3 className="font-display font-bold text-primary text-lg leading-tight">
             {workshop.name}
           </h3>
-          {workshop.type && (
-            <span className="badge-primary shrink-0 capitalize">{workshop.type}</span>
+          {workshopType && (
+            <span className="badge-primary shrink-0 capitalize">{workshopType}</span>
           )}
         </div>
 
@@ -26,21 +28,25 @@ export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled 
         )}
 
         <div className="space-y-2 mb-4">
-          {workshop.speaker_name && (
+          {speakerName && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <HiUser className="w-4 h-4 text-primary-400 shrink-0" />
-              <span>{workshop.speaker_name}</span>
+              <HiUser className="w-4 h-4 text-[#1A3A6B]/60 shrink-0" />
+              <span>{speakerName}</span>
             </div>
           )}
-          {workshop.time && (
+          {(workshop.start_time || workshop.time) && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <HiClock className="w-4 h-4 text-primary-400 shrink-0" />
-              <span>{workshop.time}</span>
+              <HiClock className="w-4 h-4 text-[#1A3A6B]/60 shrink-0" />
+              <span>
+                {workshop.start_time
+                  ? `${new Date(workshop.start_time).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })} - ${new Date(workshop.end_time).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`
+                  : workshop.time}
+              </span>
             </div>
           )}
           {workshop.location && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <HiLocationMarker className="w-4 h-4 text-primary-400 shrink-0" />
+              <HiLocationMarker className="w-4 h-4 text-[#1A3A6B]/60 shrink-0" />
               <span>{workshop.location}</span>
             </div>
           )}
@@ -50,7 +56,7 @@ export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled 
           <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
             <div className="flex items-center gap-1">
               <HiUserGroup className="w-3.5 h-3.5" />
-              <span>{workshop.enrolled_count || 0} / {workshop.max_capacity || '?'}</span>
+              <span>{enrolledCount} / {capacity || '?'}</span>
             </div>
             <span className={clsx(isFull ? 'text-red-500 font-medium' : 'text-gray-500')}>
               {isFull ? 'Lleno' : `${capacityPercent}%`}
@@ -60,7 +66,7 @@ export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled 
             <div
               className={clsx(
                 'h-full rounded-full transition-all duration-500',
-                capacityPercent >= 90 ? 'bg-red-500' : capacityPercent >= 70 ? 'bg-accent' : 'bg-primary'
+                capacityPercent >= 90 ? 'bg-red-500' : capacityPercent >= 70 ? 'bg-[#F4A524]' : 'bg-[#1A3A6B]'
               )}
               style={{ width: `${Math.min(capacityPercent, 100)}%` }}
             />

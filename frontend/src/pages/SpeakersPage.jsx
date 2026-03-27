@@ -7,7 +7,7 @@ import api from '../services/api';
 
 const fetchSpeakers = async () => {
   const { data } = await api.get('/workshops/speakers/');
-  return data;
+  return data.results || data;
 };
 
 export default function SpeakersPage() {
