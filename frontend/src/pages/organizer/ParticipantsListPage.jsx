@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { HiSearch, HiFilter, HiDownload, HiUserGroup } from 'react-icons/hi';
+import { HiSearch, HiDownload, HiUserGroup } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import adminService from '../../services/adminService';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -70,19 +70,22 @@ export default function ParticipantsListPage() {
   };
 
   return (
-    <div className="page-container">
+    <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900">Participantes</h1>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900">
+            Participantes
+          </h1>
           <p className="text-gray-500 mt-1 text-sm">
-            {Array.isArray(participants) ? participants.length : 0} participantes registrados
+            {Array.isArray(participants) ? participants.length : 0} participantes
+            registrados
           </p>
         </div>
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50 text-sm"
+          className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50 text-sm shrink-0"
         >
           <HiDownload className="w-4 h-4" />
           {exporting ? 'Exportando...' : 'Exportar Excel'}
@@ -108,7 +111,9 @@ export default function ParticipantsListPage() {
             className="input-field !py-2.5 text-sm"
           >
             {ticketFilters.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
             ))}
           </select>
           <select
@@ -117,7 +122,9 @@ export default function ParticipantsListPage() {
             className="input-field !py-2.5 text-sm"
           >
             {paymentFilters.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
             ))}
           </select>
           <select
@@ -126,7 +133,9 @@ export default function ParticipantsListPage() {
             className="input-field !py-2.5 text-sm"
           >
             {accreditedFilters.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
             ))}
           </select>
         </div>
@@ -134,10 +143,16 @@ export default function ParticipantsListPage() {
 
       {/* Table */}
       {isLoading ? (
-        <LoadingSpinner size="lg" label="Cargando participantes..." className="py-20" />
+        <LoadingSpinner
+          size="lg"
+          label="Cargando participantes..."
+          className="py-20"
+        />
       ) : isError ? (
         <div className="card p-8 text-center">
-          <p className="text-gray-500">Error al cargar participantes. Intenta de nuevo.</p>
+          <p className="text-gray-500">
+            Error al cargar participantes. Intenta de nuevo.
+          </p>
         </div>
       ) : participants.length > 0 ? (
         <div className="card overflow-hidden">
@@ -145,38 +160,67 @@ export default function ParticipantsListPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Nombre</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Email</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Universidad</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Entrada</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Pago</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Acreditado</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">
+                    Nombre
+                  </th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">
+                    Email
+                  </th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">
+                    Universidad
+                  </th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">
+                    Entrada
+                  </th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">
+                    Pago
+                  </th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">
+                    Acreditado
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {participants.map((p, idx) => (
-                  <tr key={p.id || idx} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={p.id || idx}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
                       {p.full_name || p.name || '--'}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{p.email || '--'}</td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{p.university || '--'}</td>
-                    <td className="px-4 py-3">
-                      <span className="badge-primary capitalize">{p.ticket_type || '--'}</span>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      {p.email || '--'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      {p.university || '--'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={clsx(
-                        'badge',
-                        p.payment_status === 'paid' ? 'badge-success' : 'bg-yellow-50 text-yellow-700'
-                      )}>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#1A3A6B]/10 text-[#1A3A6B] capitalize">
+                        {p.ticket_type || '--'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={clsx(
+                          'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                          p.payment_status === 'paid'
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-yellow-50 text-yellow-700'
+                        )}
+                      >
                         {p.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={clsx(
-                        'badge',
-                        p.is_accredited ? 'badge-success' : 'bg-gray-100 text-gray-500'
-                      )}>
+                      <span
+                        className={clsx(
+                          'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                          p.is_accredited
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-gray-100 text-gray-500'
+                        )}
+                      >
                         {p.is_accredited ? 'Si' : 'No'}
                       </span>
                     </td>
@@ -188,11 +232,15 @@ export default function ParticipantsListPage() {
         </div>
       ) : (
         <div className="card p-8 sm:p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-4">
-            <HiUserGroup className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 rounded-2xl bg-[#1A3A6B]/5 flex items-center justify-center mx-auto mb-4">
+            <HiUserGroup className="w-8 h-8 text-[#1A3A6B]" />
           </div>
-          <h3 className="font-display font-bold text-gray-900 text-lg mb-2">Sin resultados</h3>
-          <p className="text-gray-500 text-sm">No se encontraron participantes con los filtros aplicados.</p>
+          <h3 className="font-display font-bold text-gray-900 text-lg mb-2">
+            Sin resultados
+          </h3>
+          <p className="text-gray-500 text-sm">
+            No se encontraron participantes con los filtros aplicados.
+          </p>
         </div>
       )}
     </div>
