@@ -1,10 +1,15 @@
 import { HiAcademicCap, HiBriefcase } from 'react-icons/hi';
+import { motion } from 'motion/react';
 
 export default function SpeakerCard({ speaker }) {
   if (!speaker) return null;
 
   return (
-    <div className="card group">
+    <motion.div
+      className="card group overflow-hidden"
+      whileHover={{ y: -8, boxShadow: '0 25px 50px rgba(26,58,107,0.15)' }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="aspect-[4/5] bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
         {(speaker.photo_url || speaker.photo) ? (
           <img
@@ -42,6 +47,6 @@ export default function SpeakerCard({ speaker }) {
           <p className="text-xs text-gray-500 mt-3 line-clamp-3 leading-relaxed">{speaker.bio}</p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

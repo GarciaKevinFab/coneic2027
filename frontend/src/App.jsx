@@ -1,10 +1,12 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrganizerRoute from './components/OrganizerRoute';
+import { ScrollProgress } from './components/animations';
 
 // Public pages
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -44,13 +46,35 @@ function PageFallback() {
   );
 }
 
+// Page transition wrapper
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function PublicLayout() {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollProgress />
       <Navbar />
-      <main className="flex-1">
+      <main className={`flex-1 ${isHome ? '' : 'pt-16 md:pt-18'}`}>
         <Suspense fallback={<PageFallback />}>
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </Suspense>
       </main>
       <Footer />
@@ -59,12 +83,18 @@ function PublicLayout() {
 }
 
 function DashboardLayout() {
+  const location = useLocation();
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pt-16 md:pt-18">
         <Suspense fallback={<PageFallback />}>
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </Suspense>
       </main>
     </div>
@@ -73,57 +103,59 @@ function DashboardLayout() {
 
 export default function App() {
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/sobre-el-evento" element={<AboutPage />} />
-        <Route path="/schedule" element={<SchedulePage />} />
-        <Route path="/cronograma" element={<SchedulePage />} />
-        <Route path="/speakers" element={<SpeakersPage />} />
-        <Route path="/ponentes" element={<SpeakersPage />} />
-        <Route path="/workshops" element={<WorkshopsPage />} />
-        <Route path="/talleres" element={<WorkshopsPage />} />
-        <Route path="/tickets" element={<TicketsPage />} />
-        <Route path="/entradas" element={<TicketsPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/registro" element={<RegisterPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-        <Route path="/verificar-email/:token" element={<VerifyEmailPage />} />
-        <Route path="/password-reset" element={<PasswordResetPage />} />
-        <Route path="/recuperar-contrasena" element={<PasswordResetPage />} />
-        <Route path="/faq" element={<FAQPage />} />
-        <Route path="/validate-certificate/:code" element={<CertificateValidatorPage />} />
-        <Route path="/validate-certificate" element={<CertificateValidatorPage />} />
-        <Route path="/validar-certificado/:code" element={<CertificateValidatorPage />} />
-      </Route>
-
-      {/* Dashboard routes (protected) */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<DashboardHome />} />
-          <Route path="/dashboard/profile" element={<ProfilePage />} />
-          <Route path="/dashboard/my-ticket" element={<MyTicketPage />} />
-          <Route path="/dashboard/my-workshops" element={<MyWorkshopsPage />} />
-          <Route path="/dashboard/purchase" element={<PurchasePage />} />
-          <Route path="/dashboard/comprar" element={<PurchasePage />} />
-          <Route path="/dashboard/certificates" element={<CertificatesPage />} />
+    <MotionConfig transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}>
+      <Routes>
+        {/* Public routes */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/sobre-el-evento" element={<AboutPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/cronograma" element={<SchedulePage />} />
+          <Route path="/speakers" element={<SpeakersPage />} />
+          <Route path="/ponentes" element={<SpeakersPage />} />
+          <Route path="/workshops" element={<WorkshopsPage />} />
+          <Route path="/talleres" element={<WorkshopsPage />} />
+          <Route path="/tickets" element={<TicketsPage />} />
+          <Route path="/entradas" element={<TicketsPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+          <Route path="/verificar-email/:token" element={<VerifyEmailPage />} />
+          <Route path="/password-reset" element={<PasswordResetPage />} />
+          <Route path="/recuperar-contrasena" element={<PasswordResetPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/validate-certificate/:code" element={<CertificateValidatorPage />} />
+          <Route path="/validate-certificate" element={<CertificateValidatorPage />} />
+          <Route path="/validar-certificado/:code" element={<CertificateValidatorPage />} />
         </Route>
-      </Route>
 
-      {/* Organizer routes (protected + organizer role) */}
-      <Route element={<OrganizerRoute />}>
-        <Route element={<DashboardLayout />}>
-          <Route path="/organizer" element={<OrgDashboard />} />
-          <Route path="/organizer/participants" element={<ParticipantsListPage />} />
-          <Route path="/organizer/payments" element={<PaymentsReportPage />} />
-          <Route path="/organizer/accreditation" element={<AccreditationPage />} />
-          <Route path="/organizer/workshops" element={<WorkshopsReportPage />} />
-          <Route path="/organizer/certificates" element={<GenerateCertificatesPage />} />
+        {/* Dashboard routes (protected) */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardHome />} />
+            <Route path="/dashboard/profile" element={<ProfilePage />} />
+            <Route path="/dashboard/my-ticket" element={<MyTicketPage />} />
+            <Route path="/dashboard/my-workshops" element={<MyWorkshopsPage />} />
+            <Route path="/dashboard/purchase" element={<PurchasePage />} />
+            <Route path="/dashboard/comprar" element={<PurchasePage />} />
+            <Route path="/dashboard/certificates" element={<CertificatesPage />} />
+          </Route>
         </Route>
-      </Route>
-    </Routes>
+
+        {/* Organizer routes (protected + organizer role) */}
+        <Route element={<OrganizerRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/organizer" element={<OrgDashboard />} />
+            <Route path="/organizer/participants" element={<ParticipantsListPage />} />
+            <Route path="/organizer/payments" element={<PaymentsReportPage />} />
+            <Route path="/organizer/accreditation" element={<AccreditationPage />} />
+            <Route path="/organizer/workshops" element={<WorkshopsReportPage />} />
+            <Route path="/organizer/certificates" element={<GenerateCertificatesPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </MotionConfig>
   );
 }

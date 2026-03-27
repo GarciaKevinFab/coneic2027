@@ -1,4 +1,5 @@
 import { HiUser, HiClock, HiLocationMarker, HiUserGroup } from 'react-icons/hi';
+import { motion } from 'motion/react';
 import clsx from 'clsx';
 
 export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled = false, loading = false }) {
@@ -12,7 +13,11 @@ export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled 
   const workshopType = workshop.workshop_type_display || workshop.workshop_type || workshop.type;
 
   return (
-    <div className="card flex flex-col">
+    <motion.div
+      className="card flex flex-col"
+      whileHover={{ y: -6, boxShadow: '0 20px 40px rgba(26,58,107,0.12)' }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="p-5 sm:p-6 flex-1 flex flex-col">
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="font-display font-bold text-primary text-lg leading-tight">
@@ -95,6 +100,6 @@ export default function WorkshopCard({ workshop, onEnroll, onUnenroll, enrolled 
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
