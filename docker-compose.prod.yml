@@ -1,0 +1,136 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME:-coneic2027}
+      POSTGRES_USER: ${DB_USER:-coneic}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-coneic} -d ${DB_NAME:-coneic2027}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_network
+
+  backend:
+    build: ./backend
+    command: >
+      gunicorn config.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 4
+      --worker-class gevent
+      --worker-connections 1000
+      --timeout 120
+      --access-logfile -
+      --error-logfile -
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - static_files:/app/staticfiles
+      - media_files:/app/media
+    expose:
+      - "8000"
+    networks:
+      - backend_network
+
+  celery:
+    build: ./backend
+    command: celery -A config worker -l info --concurrency=4
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - backend_network
+
+  celery-beat:
+    build: ./backend
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - backend_network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_CULQI_PUBLIC_KEY: ${VITE_CULQI_PUBLIC_KEY}
+    restart: always
+    volumes:
+      - frontend_dist:/app/dist
+    networks:
+      - frontend_network
+
+  nginx:
+    image: nginx:1.25-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_files:/var/www/coneic2027/static
+      - media_files:/var/www/coneic2027/media
+      - frontend_dist:/var/www/coneic2027/frontend/dist
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - backend_network
+      - frontend_network
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - frontend_network
+
+volumes:
+  postgres_data:
+  static_files:
+  media_files:
+  frontend_dist:
+  certbot_webroot:
+
+networks:
+  backend_network:
+    driver: bridge
+  frontend_network:
+    driver: bridge

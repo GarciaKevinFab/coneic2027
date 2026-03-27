@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class ParticipantsConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.participants"
+    verbose_name = "Participantes"
+
+    def ready(self):
+        import apps.participants.signals  # noqa: F401
