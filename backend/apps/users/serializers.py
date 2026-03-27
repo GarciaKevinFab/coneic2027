@@ -88,12 +88,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "country",
             "city",
             "is_verified",
+            "is_staff",
             "created_at",
         ]
         read_only_fields = [
             "id",
             "email",
             "is_verified",
+            "is_staff",
             "created_at",
         ]
 

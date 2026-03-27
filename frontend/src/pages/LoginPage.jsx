@@ -17,7 +17,7 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (data) => {
-      storeLogin(data.user, data.access_token, data.refresh_token);
+      storeLogin(data.user, data.access, data.refresh);
       navigate(from, { replace: true });
     },
     onError: (err) => {

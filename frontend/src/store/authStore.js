@@ -42,7 +42,7 @@ const useAuthStore = create(
 
       isOrganizer: () => {
         const user = get().user;
-        return user?.role === 'organizer' || user?.role === 'admin';
+        return user?.is_staff === true || user?.role === 'organizer' || user?.role === 'admin';
       },
 
       hasTicket: () => {
